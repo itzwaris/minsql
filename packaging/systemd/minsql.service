@@ -1,0 +1,17 @@
+[Unit]
+Description=minsql Database Server
+After=network.target
+
+[Service]
+Type=simple
+User=minsql
+Group=minsql
+ExecStart=/usr/bin/minsql --node-id 1 --data-dir /var/lib/minsql --port 5433
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=minsql
+
+[Install]
+WantedBy=multi-user.target
