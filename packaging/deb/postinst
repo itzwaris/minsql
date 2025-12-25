@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e
+
+if [ "$1" = "configure" ]; then
+    if ! id -u minsql > /dev/null 2>&1; then
+        useradd --system --home-dir /var/lib/minsql --shell /bin/false minsql
+    fi
+
+    mkdir -p /var/lib/minsql
+    mkdir -p /var/log/minsql
+    chown -R minsql:minsql /var/lib/minsql
+    chown -R minsql:minsql /var/log/minsql
+
+    systemctl daemon-reload
+    systemctl enable minsql.service
+
+    echo "minsql installed successfully"
+    echo "Start with: sudo systemctl start minsql"
+fi
+
+exit 0
