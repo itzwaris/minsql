@@ -1,0 +1,10 @@
+/target/
+/data/
+*.log
+*.pid
+Cargo.lock
+**/*.rs.bk
+*.o
+*.a
+*.so
+.DS_Store
