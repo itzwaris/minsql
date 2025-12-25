@@ -11,6 +11,9 @@ mod replication;
 mod udf;
 mod ffi;
 mod telemetry;
+mod analytics;
+mod security;
+mod monitoring;
 
 use anyhow::Result;
 use config::Config;
