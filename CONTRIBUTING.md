@@ -1,21 +1,21 @@
 # Contributing to minsql
 
-Thank you for your interest in contributing to minsql.
+Thanks for considering contributing to minsql! We appreciate your interest in making this project better.
 
 ## Code of Conduct
 
-Be respectful, constructive, and professional in all interactions.
+Keep things respectful and professional. We're all here to build something great together.
 
-## Development Setup
+## Getting Started
 
-### Prerequisites
+### What You'll Need
 
-- Rust 1.75 or later
+- Rust 1.75+
 - GCC/Clang with C++20 support
-- Linux development environment (Ubuntu/Debian preferred)
+- Linux environment (Ubuntu/Debian works best)
 - Git
 
-### Building
+### Building from Source
 
 ```bash
 git clone https://github.com/notwaris/minsql.git
@@ -32,104 +32,92 @@ cargo test --package validation
 
 ## Code Style
 
-### Rust Code
-
+### Rust
 - Follow standard Rust conventions
-- Use `cargo fmt` before committing
-- Run `cargo clippy` and address all warnings
-- Keep functions focused and single-purpose
-- Comments should explain WHY, not WHAT
+- Run `cargo fmt` before committing
+- Fix all `cargo clippy` warnings
+- Keep functions small and focused
+- Comment the "why", not the "what"
 
-### C/C++ Code
-
-- Use consistent indentation (4 spaces)
-- Prefer stack allocation where safe
+### C/C++
+- 4 spaces for indentation
+- Prefer stack allocation when possible
 - Use RAII in C++ code
-- Keep C code simple and predictable
+- Keep C code simple
 - Avoid complex macros
 
-## Commit Messages
+## Making Changes
 
-Write clear, descriptive commit messages:
+### Commit Messages
+Keep them clear and descriptive:
 
 ```
 Add B-tree index split logic
 
-Implements node splitting when a B-tree node exceeds capacity.
-Uses a simple median-split strategy for balanced tree growth.
+Implements node splitting when capacity is exceeded.
+Uses median-split strategy for balanced growth.
 ```
 
-## Pull Request Process
+### Pull Requests
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
+1. Fork the repo
+2. Create a branch: `git checkout -b your-feature`
 3. Make your changes
 4. Run tests: `cargo test`
-5. Commit with clear messages
+5. Commit your work
 6. Push to your fork
-7. Open a pull request
+7. Open a PR
 
-### PR Guidelines
+Keep PRs focused on one thing. Include tests for new features. Make sure everything passes before submitting.
 
-- Keep PRs focused on a single change
-- Include tests for new functionality
-- Update documentation as needed
-- Ensure all tests pass
-- Respond to review feedback promptly
-
-## Areas for Contribution
+## What to Work On
 
 ### High Priority
-
 - Storage engine optimizations
 - Query optimizer improvements
-- Additional index types
+- New index types
 - Replication stability
 - Performance benchmarks
 
 ### Documentation
-
 - Usage examples
-- Architecture diagrams
-- Performance tuning guides
-- Troubleshooting documentation
+- Architecture docs
+- Performance guides
+- Troubleshooting tips
 
 ### Testing
-
-- Unit test coverage
+- Unit tests
 - Integration tests
 - Crash recovery tests
-- Performance regression tests
+- Performance tests
 
-## Architecture Guidelines
+## Architecture Notes
 
-### Language Boundaries
-
-- **Rust**: Control plane, safety-critical logic, orchestration
+### Language Usage
+- **Rust**: Safety-critical logic, orchestration
 - **C**: Performance-critical deterministic code (WAL, pages)
-- **C++**: Data structures benefiting from templates (indexes)
+- **C++**: Complex data structures (indexes, trees)
 
-Do not blur these boundaries without discussion.
+Don't mix these without good reason.
 
-### Safety Requirements
+### Safety First
+- Document all unsafe Rust code
+- No memory leaks in C/C++
+- Validate all FFI inputs
+- Clean up resources properly
 
-- All unsafe Rust code must have safety comments
-- C/C++ code must not leak memory
-- FFI boundaries must validate all inputs
-- Resource cleanup must be deterministic
+## Performance
 
-## Performance Expectations
-
-- Profile before optimizing
+- Profile before you optimize
 - Benchmark significant changes
-- Consider cache effects
+- Think about cache effects
 - Minimize allocations in hot paths
-- Document performance-critical sections
+- Document performance-critical code
 
 ## Questions?
 
-Open an issue with the "question" label or reach out to the maintainer.
+Open an issue or reach out to the maintainer. We're happy to help!
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree your code will be MIT licensed.
