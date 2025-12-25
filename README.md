@@ -21,7 +21,7 @@ A revolutionary, intent-driven database system with deterministic execution
 
 > Make sure to check the [docs/](docs/) folder for more details
 
-### If you want to self-host this
+### If you want to get started
 
 > Install via package manager: `sudo apt install minsql` or build from source
 
@@ -39,4 +39,4 @@ A revolutionary, intent-driven database system with deterministic execution
 
 > Test the code locally before submitting a pull request
 
-### Made with ❤️ by `@Waris`
+### Made with ❤️ by `@notwaris`
