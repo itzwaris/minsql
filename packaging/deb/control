@@ -1,0 +1,15 @@
+Package: minsql
+Version: 0.1.0
+Section: database
+Priority: optional
+Architecture: amd64
+Maintainer: notwaris
+Description: A production grade, intent driven database system
+ minsql is a new class of database that prioritizes:
+ - Intent-driven queries
+ - Deterministic execution
+ - Time-travel queries
+ - First-class sharding
+ - Crash safety
+ - Query sandboxing
+Depends: libc6, libgcc-s1, libstdc++6
