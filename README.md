@@ -1,109 +1,42 @@
 # minsql
+A revolutionary, intent-driven database system with deterministic execution
 
-A production-grade, intent-driven database system with deterministic execution capabilities.
+> The Database Project. minsql. `(c) notwaris`
 
-## What is minsql?
+<p align="center">
+  <img src="https://i.postimg.cc/3xcB9GVJ/tree.png">
+</p>
 
-minsql is a new class of database that prioritizes:
+> A database that showcases intent-driven query model, deterministic execution, and time-travel capabilities
 
-- **Intent-driven queries**: Operations are parsed into semantic intent rather than rigid syntax
-- **Deterministic execution**: Same input produces identical output and timing when enabled
-- **Time-travel queries**: Query historical data at any point in time
-- **First-class sharding**: The planner understands data locality and minimizes cross-shard operations
-- **Crash safety**: WAL-based recovery with idempotent replay guarantees
-- **Query sandboxing**: Per-query CPU, memory, and time limits
+> This supports distributed sharding and Raft consensus for high availability
 
-## Core Differentiators
+### Before you start 
 
-### Intent-Aware Query Model
-Unlike traditional SQL databases that operate on syntax trees, minsql parses queries into semantic intent. The optimizer operates on what you want to accomplish, not how you phrased it.
+> minsql is built with modern applications in mind
 
-### Deterministic Execution Mode
-When deterministic mode is enabled, queries produce identical results with identical timing. This enables:
-- Reproducible debugging
-- Consistent replication
-- Predictable performance testing
-- Audit compliance
+> Make sure you have Rust toolchain installed on your system
 
-### Time-Travel Queries
-Query data as it existed at any point in the past:
-```
-retrieve users where created_at < '2024-01-01' at timestamp '2024-11-10 12:03:21'
-```
+> Your own Raft cluster configuration for distributed setup
 
-### Query-Level Sandboxing
-Every query runs with configurable resource limits:
-- CPU budget enforcement
-- Memory allocation caps
-- Wall-clock time limits
-- Per-query isolation
+> Make sure to check the [docs/](docs/) folder for more details
 
-## Installation
+### If you want to self-host this
 
-### From APT Repository
+> Install via package manager: `sudo apt install minsql` or build from source
 
-```bash
-sudo apt install minsql
-```
+> Check [docs/](docs/) folder for detailed setup and configuration guides
+ 
+> Then do `./target/release/minsql` to start the database server
 
-### Building from Source
+### If you want to contribute
 
-```bash
-git clone https://github.com/notwaris/minsql.git
-cd minsql
-cargo build --release
-```
+> Check [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines
 
-## Quick Start
+> Ensure you have knowledge on developing in Rust
 
-Start the minsql server:
+> Test your changes to ensure it adheres to the repository's coding standards by doing `cargo clippy`
 
-```bash
-sudo systemctl start minsql
-```
+> Test the code locally before submitting a pull request
 
-Connect with the client:
-
-```bash
-minsql-client --host localhost --port 5433
-```
-
-## Architecture
-
-minsql uses a hybrid Rust/C/C++ architecture:
-
-- **Rust**: Control plane, query planning, execution orchestration, networking
-- **C**: WAL, page manager, buffer pool, crash recovery
-- **C++**: Indexes (B-tree, hash, bloom filter), compression
-
-This split maximizes both safety and performance.
-
-## Documentation
-
-See the `docs/` directory for detailed documentation:
-
-- [Vision](docs/vision.md) - Project goals and philosophy
-- [Language](docs/language.md) - Query language reference
-- [Execution](docs/execution.md) - Execution model
-- [Optimizer](docs/optimizer.md) - Query optimization
-- [Determinism](docs/determinism.md) - Deterministic execution
-- [Storage](docs/storage.md) - Storage engine internals
-- [Transactions](docs/transactions.md) - MVCC and isolation
-- [Sharding](docs/sharding.md) - Distributed data placement
-- [Replication](docs/replication.md) - Consensus and state sync
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Project Status
-
-minsql is under active development. Production use is not yet recommended.
-
-## Author
-
-Created by [notwaris](https://github.com/notwaris)
+### Made with ❤️ by `@Waris`
