@@ -1,8 +1,6 @@
 use std::env;
-use std::path::PathBuf;
 
 fn main() {
-    // Compile the C storage library
     cc::Build::new()
         .include("storage/include")
         .file("storage/entry.c")
@@ -11,6 +9,7 @@ fn main() {
         .file("storage/wal/wal.c")
         .file("storage/memory/arena.c")
         .warnings(false)
+        .flag_if_supported("-g")
         .compile("minsql_storage");
 
     println!("cargo:rerun-if-changed=storage/");
@@ -21,7 +20,6 @@ fn main() {
     println!("cargo:rerun-if-changed=storage/memory/arena.c");
     println!("cargo:rerun-if-changed=storage/include/minsql_storage.h");
 
-    // Link the library
     let out_dir = env::var("OUT_DIR").unwrap();
     println!("cargo:rustc-link-search=native={}", out_dir);
     println!("cargo:rustc-link-lib=static=minsql_storage");
