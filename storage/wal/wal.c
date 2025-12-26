@@ -15,6 +15,8 @@ struct WAL {
     char filepath[256];
 };
 
+static StorageResult wal_flush_internal(WAL* wal);
+
 WAL* wal_create(const char* data_dir) {
     WAL* wal = malloc(sizeof(WAL));
     if (!wal) return NULL;
