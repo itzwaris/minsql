@@ -39,4 +39,4 @@ A revolutionary, intent-driven database system with deterministic execution
 
 > Test the code locally before submitting a pull request
 
-### Made with ❤️ by `@notwaris` & `@sahilarun`
+### Made with ❤️ by `@notwaris`
