@@ -1,4 +1,5 @@
 use crate::ffi::storage::StorageEngine;
+use crate::language::ast::ColumnDefinition;
 use crate::language::intent::*;
 use crate::language::JoinType;
 use crate::planner::logical::LogicalPlan;
@@ -63,6 +64,10 @@ pub enum PhysicalPlan {
     Delete {
         table: String,
         filter: Option<FilterIntent>,
+    },
+    CreateTable {
+        name: String,
+        columns: Vec<ColumnDefinition>,
     },
 }
 
@@ -167,6 +172,12 @@ impl<'a> PhysicalPlanner<'a> {
                     filter: filter.clone(),
                 })
             }
+            LogicalPlan::CreateTable { name, columns } => {
+                Ok(PhysicalPlan::CreateTable {
+                    name: name.clone(),
+                    columns: columns.clone(),
+                })
+            }
         }
     }
-                  }
+}
