@@ -298,7 +298,10 @@ impl SemanticAnalyzer {
                     args: arg_intents,
                 })
             }
-            _ => anyhow::bail!("Unsupported expression type"),
+            Expression::Star => {
+                Ok(ExpressionIntent::Column("*".to_string()))
+            }
+            _ => anyhow::bail!("Unsupported expression type: {:?}", expr),
         }
     }
 
