@@ -101,13 +101,6 @@ This prevents runaway queries from affecting system stability.
 
 ## Non-Goals
 
-### Not PostgreSQL Compatible
-
-minsql is not trying to be a PostgreSQL replacement. We do not:
-- Reimplement PostgreSQL semantics
-- Support PostgreSQL SQL dialect
-- Use PostgreSQL data structures
-- Maintain wire protocol compatibility beyond basic client support
 
 ### Not a Key-Value Store
 
@@ -160,32 +153,6 @@ minsql is successful when:
 3. **Crash recovery is reliable**: WAL replay succeeds in all failure scenarios
 4. **Sharding is transparent**: Applications don't need shard awareness
 5. **Operations are simple**: Single binary, clear configuration, good observability
-
-## Roadmap
-
-### Phase 1: Core Engine
-- Storage engine with WAL
-- Query language parser
-- Basic execution engine
-- MVCC transactions
-
-### Phase 2: Distribution
-- Sharding implementation
-- Raft-based replication
-- Cluster management
-- Cross-shard queries
-
-### Phase 3: Advanced Features
-- Query optimizer improvements
-- Additional index types
-- Compression
-- Streaming replication
-
-### Phase 4: Production Hardening
-- Performance optimization
-- Failure injection testing
-- Operational tooling
-- Documentation
 
 ## Philosophy
 
