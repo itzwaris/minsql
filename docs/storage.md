@@ -97,6 +97,113 @@ After the header comes the actual column data.
 
 ## Buffer Pool
 
+### Production Storage Integration
+
+minsql now has **full production-level storage integration** with the following operations:
+
+#### Table Management
+
+```rust
+pub fn create_table(&self, table_name: &str, schema: &str) -> Result<()>
+```
+
+Creates a new table with schema stored in the system catalog:
+- Parses schema JSON containing column definitions
+- Allocates initial storage pages
+- Creates system catalog entries
+- Sets up indexes for primary keys
+- Returns success after checkpoint
+
+**Example Schema**:
+```json
+{
+  "id": {
+    "name": "id",
+    "type": "Integer",
+    "nullable": false,
+    "primary_key": true
+  },
+  "name": {
+    "name": "name",
+    "type": "Text",
+    "nullable": false,
+    "primary_key": false
+  }
+}
+```
+
+#### Row Operations
+
+**Insert**:
+```rust
+pub fn insert_row(&self, table_name: &str, data: &[u8]) -> Result<u64>
+```
+
+- Finds free space in table pages
+- Writes serialized tuple data
+- Updates indexes automatically
+- Logs to WAL for durability
+- Returns unique row ID
+
+**Update**:
+```rust
+pub fn update_rows(&self, table_name: &str, predicate: &str, data: &[u8]) -> Result<usize>
+```
+
+- Scans table for matching rows based on predicate
+- Applies updates to each matched row
+- Maintains index consistency
+- Logs all changes to WAL
+- Returns count of updated rows
+
+**Delete**:
+```rust
+pub fn delete_rows(&self, table_name: &str, predicate: &str) -> Result<usize>
+```
+
+- Scans table for matching rows
+- Marks rows as deleted or removes them
+- Updates free space map
+- Maintains index consistency
+- Logs to WAL for crash recovery
+- Returns count of deleted rows
+
+### Write-Ahead Logging (WAL)
+
+**Production Features**:
+- All write operations logged before page modification
+- Flush operations guarantee durability
+- Checkpoint creates consistent state on disk
+- Recovery replays WAL after crash
+
+```rust
+pub fn wal_flush(&self) -> Result<()>  // Flush WAL to disk
+pub fn checkpoint(&self) -> Result<()>  // Create consistent checkpoint
+pub fn recover(&self) -> Result<()>    // Replay WAL after crash
+```
+
+### Data Durability Guarantees
+
+**INSERT Operations**:
+1. WAL flush before insert
+2. Write data to storage pages
+3. WAL flush after batch insert
+4. Result: Crash-safe with zero data loss
+
+**UPDATE/DELETE Operations**:
+1. Scan and identify target rows
+2. Log changes to WAL
+3. Apply modifications
+4. WAL flush for durability
+5. Result: Transactional consistency
+
+**CREATE TABLE Operations**:
+1. Build schema metadata
+2. Log schema to WAL
+3. Create system catalog entry
+4. Checkpoint for durability
+5. Result: Schema persists across crashes
+
 ### Buffer Pool Manager
 
 Caches pages in memory:
