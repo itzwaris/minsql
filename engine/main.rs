@@ -14,6 +14,8 @@ mod telemetry;
 mod analytics;
 mod security;
 mod monitoring;
+mod streams;
+mod graphql;
 
 use anyhow::Result;
 use config::Config;
@@ -31,6 +33,8 @@ async fn main() -> Result<()> {
     tracing::info!("Starting minsql node {}", config.node_id);
     tracing::info!("Data directory: {}", config.data_dir);
     tracing::info!("Listening on port {}", config.port);
+    tracing::info!("Streaming features enabled");
+    tracing::info!("GraphQL API enabled");
 
     let lifecycle = Lifecycle::new(config).await?;
     lifecycle.run().await?;
