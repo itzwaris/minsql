@@ -33,7 +33,10 @@ impl PubSubBroker {
         let (tx, rx) = mpsc::channel(1000);
 
         let mut channels = self.channels.write().await;
-        channels.entry(channel.to_string()).or_insert_with(Vec::new).push(tx);
+        channels
+            .entry(channel.to_string())
+            .or_insert_with(Vec::new)
+            .push(tx);
 
         rx
     }
@@ -50,10 +53,10 @@ impl PubSubBroker {
         self.store_message(message.clone()).await;
 
         let channels = self.channels.read().await;
-        
+
         if let Some(subscribers) = channels.get(channel) {
             for subscriber in subscribers {
-                subscriber.send(message.clone()).await.ok();
+                let _ = subscriber.send(message.clone()).await;
             }
         }
 
@@ -77,10 +80,10 @@ impl PubSubBroker {
         self.store_message(message.clone()).await;
 
         let channels = self.channels.read().await;
-        
+
         if let Some(subscribers) = channels.get(channel) {
             for subscriber in subscribers {
-                subscriber.send(message.clone()).await.ok();
+                let _ = subscriber.send(message.clone()).await;
             }
         }
 
@@ -89,20 +92,24 @@ impl PubSubBroker {
 
     async fn store_message(&self, message: Message) {
         let mut history = self.message_history.write().await;
-        
+
         if history.len() >= self.max_history {
             history.remove(0);
         }
-        
+
         history.push(message);
     }
 
-    pub async fn get_message_history(&self, channel: Option<String>, limit: usize) -> Vec<Message> {
+    pub async fn get_message_history(
+        &self,
+        channel: Option<String>,
+        limit: usize,
+    ) -> Vec<Message> {
         let history = self.message_history.read().await;
-        
+
         history
             .iter()
-            .filter(|m| channel.as_ref().map_or(true, |c| &m.channel == c))
+            .filter(|m| channel.as_ref().is_none_or(|c| &m.channel == c))
             .rev()
             .take(limit)
             .cloned()
@@ -124,9 +131,9 @@ impl PubSubBroker {
 
     pub async fn cleanup_dead_subscribers(&self) {
         let mut channels = self.channels.write().await;
-        
+
         for (_, subscribers) in channels.iter_mut() {
             subscribers.retain(|sub| !sub.is_closed());
         }
     }
-  }
+}
