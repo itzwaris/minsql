@@ -13,7 +13,6 @@ fn main() {
         .warnings(false)
         .compile("minsql_storage");
 
-    // Tell Cargo to re-run build.rs if any C files change
     println!("cargo:rerun-if-changed=storage/");
     println!("cargo:rerun-if-changed=storage/entry.c");
     println!("cargo:rerun-if-changed=storage/buffer/buffer_pool.c");
