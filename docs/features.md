@@ -2,7 +2,7 @@
 
 ## Overview
 
-minsql is not just another database—it's a next-generation data platform with unique capabilities designed for modern applications. This document covers the advanced features that set minsql apart.
+minsql is not just another database it's a next-generation data platform with unique capabilities designed for modern applications. This document covers the advanced features that set minsql apart.
 
 ## Core Differentiators
 
