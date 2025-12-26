@@ -99,6 +99,167 @@ Operators are composed in a tree. Parent operators call `next()` on children to 
 
 ## Core Operators
 
+### SeqScan
+
+Sequential table scan:
+
+```rust
+PhysicalPlan::SeqScan {
+    table: "users",
+    columns: vec!["id", "name", "age"]
+}
+```
+
+**Implementation**: Iterates through table pages, returns tuples matching column projection.
+
+### Filter
+
+Filters tuples based on a predicate:
+
+```rust
+PhysicalPlan::Filter {
+    predicate: FilterIntent::Comparison {
+        op: GreaterThan,
+        left: Column("age"),
+        right: Constant(18)
+    },
+    input: SeqScan(...)
+}
+```
+
+### Project
+
+Projects specific columns:
+
+```rust
+PhysicalPlan::Project {
+    columns: vec![Named("name"), Named("email")],
+    input: Filter(...)
+}
+```
+
+### Insert (Production Implementation)
+
+**Fully Implemented**: Writes data to storage with durability guarantees:
+
+```rust
+PhysicalPlan::Insert {
+    table: "users",
+    columns: vec!["name", "age"],
+    values: vec![
+        vec![String("Alice"), Integer(30)],
+        vec![String("Bob"), Integer(25)]
+    ]
+}
+```
+
+**Storage Operations**:
+1. Converts ConstantValue to Tuple format
+2. Serializes tuple to JSON/bytes
+3. Calls `storage.insert_row(table, bytes)` - writes to storage pages
+4. Returns unique row ID for each inserted row
+5. Flushes WAL for durability
+6. Updates indexes and statistics
+
+**Guarantees**:
+- ACID compliant with WAL logging
+- Atomic batch inserts
+- Immediate durability via WAL flush
+- Row ID tracking for references
+
+### Update (Production Implementation)
+
+**Fully Implemented**: Modifies existing rows in storage:
+
+```rust
+PhysicalPlan::Update {
+    table: "users",
+    assignments: vec![
+        Assignment { column: "age", value: Integer(31) }
+    ],
+    filter: Some(Comparison { ... })
+}
+```
+
+**Storage Operations**:
+1. Builds filter predicate for row matching
+2. Serializes assignments to bytes
+3. Calls `storage.update_rows(table, filter, assignments)`
+4. Storage engine scans and updates matching rows
+5. Returns count of updated rows
+6. Flushes WAL for durability
+7. Updates indexes automatically
+
+**Guarantees**:
+- Transactional updates
+- Filter-based row matching
+- Index consistency maintained
+- WAL-based crash recovery
+
+### Delete (Production Implementation)
+
+**Fully Implemented**: Removes rows from storage:
+
+```rust
+PhysicalPlan::Delete {
+    table: "users",
+    filter: Some(LessThan { ... })
+}
+```
+
+**Storage Operations**:
+1. Builds filter predicate
+2. Calls `storage.delete_rows(table, filter)`
+3. Storage marks/removes matching rows
+4. Updates free space map
+5. Returns count of deleted rows
+6. Flushes WAL for durability
+7. Updates indexes and statistics
+
+**Guarantees**:
+- Transactional deletes
+- Space reclamation
+- Index cleanup
+- Crash-safe via WAL
+
+### CreateTable (Production Implementation)
+
+**Fully Implemented**: Creates tables with persistent schema:
+
+```rust
+PhysicalPlan::CreateTable {
+    name: "products",
+    columns: vec![
+        ColumnDefinition {
+            name: "id",
+            data_type: Integer,
+            nullable: false,
+            primary_key: true
+        },
+        ColumnDefinition {
+            name: "name",
+            data_type: Text,
+            nullable: false,
+            primary_key: false
+        }
+    ]
+}
+```
+
+**Storage Operations**:
+1. Builds schema metadata (JSON format)
+2. Stores schema in system catalog via `storage.create_table()`
+3. Allocates initial storage pages
+4. Creates primary key index if specified
+5. Flushes WAL + checkpoint for durability
+6. Schema persisted for crash recovery
+
+**Guarantees**:
+- Schema stored in system catalog
+- Transactional DDL operations
+- Checkpoint ensures durability
+- Ready for immediate INSERT operations
+
 ### Scan
 
 Reads tuples from storage:
