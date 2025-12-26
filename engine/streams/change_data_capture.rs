@@ -47,11 +47,20 @@ impl ChangeDataCapture {
         }
     }
 
-    pub async fn subscribe(&self, subscription: CDCSubscription) -> Result<mpsc::Receiver<ChangeEvent>> {
+    pub async fn subscribe(
+        &self,
+        subscription: CDCSubscription,
+    ) -> Result<mpsc::Receiver<ChangeEvent>> {
         let (tx, rx) = mpsc::channel(1000);
 
-        self.subscribers.write().await.insert(subscription.id.clone(), tx);
-        self.subscriptions.write().await.insert(subscription.id.clone(), subscription);
+        self.subscribers
+            .write()
+            .await
+            .insert(subscription.id.clone(), tx);
+        self.subscriptions
+            .write()
+            .await
+            .insert(subscription.id.clone(), subscription);
 
         Ok(rx)
     }
@@ -110,23 +119,21 @@ impl ChangeDataCapture {
             return true;
         }
 
-        operations.iter().any(|op| std::mem::discriminant(op) == std::mem::discriminant(change_type))
+        operations
+            .iter()
+            .any(|op| std::mem::discriminant(op) == std::mem::discriminant(change_type))
     }
 
     pub async fn get_change_log(
         &self,
-        table: Option<String>,
-        since: Option<DateTime<Utc>>,
-        limit: usize,
+        _table: Option<String>,
+        _since: Option<DateTime<Utc>>,
+        _limit: usize,
     ) -> Vec<ChangeEvent> {
         Vec::new()
     }
 
-    pub async fn export_changes(
-        &self,
-        format: &str,
-        table: Option<String>,
-    ) -> Result<String> {
+    pub async fn export_changes(&self, format: &str, _table: Option<String>) -> Result<String> {
         match format {
             "json" => Ok(serde_json::to_string_pretty(&Vec::<ChangeEvent>::new())?),
             "csv" => Ok("change_id,change_type,table,timestamp\n".to_string()),
@@ -137,4 +144,4 @@ impl ChangeDataCapture {
     pub async fn list_subscriptions(&self) -> Vec<CDCSubscription> {
         self.subscriptions.read().await.values().cloned().collect()
     }
-          }
+}

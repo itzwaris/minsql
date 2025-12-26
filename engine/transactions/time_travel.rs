@@ -25,10 +25,6 @@ impl TimeTravelManager {
     }
 
     pub fn create_snapshot_at_logical_time(&self, logical_time: LogicalTime) -> Snapshot {
-        Snapshot::new(
-            TransactionId(u64::MAX),
-            logical_time,
-            Vec::new(),
-        )
+        Snapshot::new(TransactionId(u64::MAX), logical_time, Vec::new())
     }
 }

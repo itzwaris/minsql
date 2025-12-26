@@ -30,7 +30,7 @@ impl SemanticAnalyzer {
 
     fn analyze_retrieve(&self, stmt: &RetrieveStatement) -> Result<Intent> {
         let columns = self.analyze_projection(&stmt.projection)?;
-        
+
         let source = SourceIntent {
             primary: self.extract_table_name(&stmt.from)?,
             joins: stmt
@@ -54,14 +54,10 @@ impl SemanticAnalyzer {
             .map(|o| self.analyze_order_by(o))
             .collect::<Result<Vec<_>>>()?;
 
-        let time_travel = if let Some(at) = &stmt.at_timestamp {
-            Some(TimeTravelIntent {
-                at_time: at.clone(),
-                until_time: stmt.until_timestamp.clone(),
-            })
-        } else {
-            None
-        };
+        let time_travel = stmt.at_timestamp.as_ref().map(|at| TimeTravelIntent {
+            at_time: at.clone(),
+            until_time: stmt.until_timestamp.clone(),
+        });
 
         Ok(Intent::Retrieve {
             columns,
@@ -99,10 +95,12 @@ impl SemanticAnalyzer {
         let assignments = stmt
             .assignments
             .iter()
-            .map(|a| Ok(AssignmentIntent {
-                column: a.column.clone(),
-                value: self.analyze_expression_intent(&a.value)?,
-            }))
+            .map(|a| {
+                Ok(AssignmentIntent {
+                    column: a.column.clone(),
+                    value: self.analyze_expression_intent(&a.value)?,
+                })
+            })
             .collect::<Result<Vec<_>>>()?;
 
         let filter = stmt
@@ -233,17 +231,11 @@ impl SemanticAnalyzer {
                     }),
                     BinaryOperator::And => Ok(FilterIntent::Logical {
                         op: LogicalOp::And,
-                        operands: vec![
-                            self.analyze_filter(left)?,
-                            self.analyze_filter(right)?,
-                        ],
+                        operands: vec![self.analyze_filter(left)?, self.analyze_filter(right)?],
                     }),
                     BinaryOperator::Or => Ok(FilterIntent::Logical {
                         op: LogicalOp::Or,
-                        operands: vec![
-                            self.analyze_filter(left)?,
-                            self.analyze_filter(right)?,
-                        ],
+                        operands: vec![self.analyze_filter(left)?, self.analyze_filter(right)?],
                     }),
                     _ => anyhow::bail!("Invalid operator in filter: {:?}", op),
                 }
@@ -298,9 +290,7 @@ impl SemanticAnalyzer {
                     args: arg_intents,
                 })
             }
-            Expression::Star => {
-                Ok(ExpressionIntent::Column("*".to_string()))
-            }
+            Expression::Star => Ok(ExpressionIntent::Column("*".to_string())),
             _ => anyhow::bail!("Unsupported expression type: {:?}", expr),
         }
     }
@@ -335,4 +325,4 @@ impl SemanticAnalyzer {
             Literal::String(s) => ConstantValue::String(s.clone()),
         }
     }
-          }
+}

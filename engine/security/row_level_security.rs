@@ -24,7 +24,7 @@ impl RLSManager {
     pub fn add_policy(&mut self, policy: RowLevelSecurityPolicy) {
         self.policies
             .entry(policy.table.clone())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(policy);
     }
 
@@ -52,18 +52,15 @@ impl RLSManager {
         tuples: Vec<Tuple>,
     ) -> Result<Vec<Tuple>> {
         let policies = self.get_policies(table, role);
-        
+
         if policies.is_empty() {
             return Ok(tuples);
         }
 
         let mut filtered = tuples;
-        
+
         for policy in policies {
-            filtered = filtered
-                .into_iter()
-                .filter(|tuple| self.evaluate_policy_filter(&policy.filter, tuple))
-                .collect();
+            filtered.retain(|tuple| self.evaluate_policy_filter(&policy.filter, tuple));
         }
 
         Ok(filtered)
@@ -80,4 +77,4 @@ impl RLSManager {
             Vec::new()
         }
     }
-          }
+}

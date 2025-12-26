@@ -48,12 +48,10 @@ impl HybridLogicalClock {
 
     pub fn now(&self) -> LogicalTime {
         let physical = match &self.mode {
-            ClockMode::Realtime => {
-                SystemTime::now()
-                    .duration_since(UNIX_EPOCH)
-                    .unwrap()
-                    .as_micros() as u64
-            }
+            ClockMode::Realtime => SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_micros() as u64,
             ClockMode::Deterministic { frozen_physical } => *frozen_physical,
         };
 

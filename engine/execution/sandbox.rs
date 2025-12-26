@@ -34,7 +34,7 @@ impl Sandbox {
 
     pub fn check(&self) -> anyhow::Result<()> {
         let elapsed = self.start_time.elapsed();
-        
+
         if elapsed > self.limits.max_wall_time {
             anyhow::bail!("Query exceeded wall time limit");
         }

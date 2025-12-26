@@ -53,7 +53,10 @@ impl Parser {
         let from = self.parse_table_reference()?;
 
         let mut joins = Vec::new();
-        while matches!(self.current(), Ok(Token::Join) | Ok(Token::Left) | Ok(Token::Inner)) {
+        while matches!(
+            self.current(),
+            Ok(Token::Join) | Ok(Token::Left) | Ok(Token::Inner)
+        ) {
             joins.push(self.parse_join()?);
         }
 
@@ -98,7 +101,7 @@ impl Parser {
             self.advance();
             self.expect(Token::Timestamp)?;
             let at = Some(self.parse_string()?);
-            
+
             let until = if matches!(self.current(), Ok(Token::Until)) {
                 self.advance();
                 self.expect(Token::Timestamp)?;
@@ -106,7 +109,7 @@ impl Parser {
             } else {
                 None
             };
-            
+
             (at, until)
         } else {
             (None, None)
@@ -231,8 +234,8 @@ impl Parser {
             let col_name = self.parse_identifier()?;
             let data_type = self.parse_data_type()?;
 
-            let mut nullable = true;
-            let mut primary_key = false;
+            let nullable = true;
+            let primary_key = false;
 
             columns.push(ColumnDefinition {
                 name: col_name,
@@ -249,7 +252,10 @@ impl Parser {
 
         self.expect(Token::RightParen)?;
 
-        Ok(Statement::CreateTable(CreateTableStatement { name, columns }))
+        Ok(Statement::CreateTable(CreateTableStatement {
+            name,
+            columns,
+        }))
     }
 
     fn parse_create_index(&mut self) -> Result<Statement> {
@@ -655,7 +661,7 @@ impl Parser {
 
     fn expect(&mut self, expected: Token) -> Result<()> {
         let current = self.current()?.clone();
-        
+
         let matches = match (&expected, &current) {
             (Token::Identifier(_), Token::Identifier(_)) => true,
             (Token::String(_), Token::String(_)) => true,
@@ -671,4 +677,4 @@ impl Parser {
             anyhow::bail!("Expected {:?}, got {:?}", expected, current)
         }
     }
-  }
+}

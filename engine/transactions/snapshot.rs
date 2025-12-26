@@ -10,7 +10,11 @@ pub struct Snapshot {
 }
 
 impl Snapshot {
-    pub fn new(xid: TransactionId, logical_time: LogicalTime, active_xids: Vec<TransactionId>) -> Self {
+    pub fn new(
+        xid: TransactionId,
+        logical_time: LogicalTime,
+        active_xids: Vec<TransactionId>,
+    ) -> Self {
         Self {
             xid,
             logical_time,

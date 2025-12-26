@@ -1,5 +1,5 @@
-use crate::sharding::keyspace::{Keyspace, ShardId};
 use crate::language::intent::Intent;
+use crate::sharding::keyspace::{Keyspace, ShardId};
 use std::collections::HashMap;
 
 pub struct Router {

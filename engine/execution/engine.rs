@@ -4,12 +4,11 @@ use crate::execution::sandbox::{QueryLimits, Sandbox};
 use crate::execution::tuple::Tuple;
 use crate::ffi::storage::StorageEngine;
 use crate::planner::physical::PhysicalPlan;
-use crate::language::ast::ColumnDefinition;
 use anyhow::Result;
 use futures::future::BoxFuture;
 use futures::FutureExt;
-use std::collections::HashMap;
 use serde_json::json;
+use std::collections::HashMap;
 
 pub struct ExecutionEngine<'a> {
     storage: &'a StorageEngine,
@@ -29,9 +28,13 @@ impl<'a> ExecutionEngine<'a> {
         self.execute_with_sandbox(plan, sandbox).await
     }
 
-    fn execute_with_sandbox<'b>(&'b mut self, plan: PhysicalPlan, sandbox: Sandbox) -> BoxFuture<'b, Result<Vec<Tuple>>> {
+    fn execute_with_sandbox<'b>(
+        &'b mut self,
+        plan: PhysicalPlan,
+        sandbox: Sandbox,
+    ) -> BoxFuture<'b, Result<Vec<Tuple>>> {
         async move {
-            let mut sandbox = sandbox;
+            let sandbox = sandbox;
             sandbox.check()?;
 
             match plan {
@@ -64,7 +67,7 @@ impl<'a> ExecutionEngine<'a> {
 
                     for tuple in tuples {
                         let mut projected = Tuple::new();
-                        
+
                         for col_intent in &columns {
                             match col_intent {
                                 crate::language::intent::ColumnIntent::Named(name) => {
@@ -86,13 +89,21 @@ impl<'a> ExecutionEngine<'a> {
 
                     Ok(results)
                 }
-                PhysicalPlan::Limit { count, offset, input } => {
+                PhysicalPlan::Limit {
+                    count,
+                    offset,
+                    input,
+                } => {
                     let tuples = self.execute_with_sandbox(*input, sandbox).await?;
                     Ok(tuples.into_iter().skip(offset).take(count).collect())
                 }
-                PhysicalPlan::Insert { table, columns, values } => {
+                PhysicalPlan::Insert {
+                    table,
+                    columns,
+                    values,
+                } => {
                     tracing::info!("INSERT into {} with {} rows", table, values.len());
-                    
+
                     self.storage.wal_flush()?;
 
                     let mut inserted_count = 0;
@@ -124,17 +135,30 @@ impl<'a> ExecutionEngine<'a> {
                         let tuple_json = serde_json::to_string(&tuple)?;
                         let tuple_bytes = tuple_json.as_bytes();
                         let row_id = self.storage.insert_row(&table, tuple_bytes)?;
-                        
-                        tracing::debug!("Inserted row {} (rowid={}) into {}: {:?}", 
-                            inserted_count, row_id, table, tuple);
+
+                        tracing::debug!(
+                            "Inserted row {} (rowid={}) into {}: {:?}",
+                            inserted_count,
+                            row_id,
+                            table,
+                            tuple
+                        );
                     }
 
                     self.storage.wal_flush()?;
-                    
-                    tracing::info!("Successfully inserted {} rows into {}", inserted_count, table);
+
+                    tracing::info!(
+                        "Successfully inserted {} rows into {}",
+                        inserted_count,
+                        table
+                    );
                     Ok(vec![])
                 }
-                PhysicalPlan::Update { table, assignments, filter } => {
+                PhysicalPlan::Update {
+                    table,
+                    assignments,
+                    filter,
+                } => {
                     tracing::info!("UPDATE {} with {} assignments", table, assignments.len());
 
                     let filter_str = match &filter {
@@ -144,10 +168,12 @@ impl<'a> ExecutionEngine<'a> {
 
                     let assignments_json = serde_json::to_string(&assignments)?;
                     let assignments_bytes = assignments_json.as_bytes();
-                    let updated_count = self.storage.update_rows(&table, &filter_str, assignments_bytes)?;
+                    let updated_count =
+                        self.storage
+                            .update_rows(&table, &filter_str, assignments_bytes)?;
 
                     self.storage.wal_flush()?;
-                    
+
                     tracing::info!("Successfully updated {} rows in {}", updated_count, table);
                     Ok(vec![])
                 }
@@ -158,16 +184,16 @@ impl<'a> ExecutionEngine<'a> {
                         Some(f) => format!("{:?}", f),
                         None => "true".to_string(),
                     };
-                    
+
                     let deleted_count = self.storage.delete_rows(&table, &filter_str)?;
                     self.storage.wal_flush()?;
-                    
+
                     tracing::info!("Successfully deleted {} rows from {}", deleted_count, table);
                     Ok(vec![])
                 }
                 PhysicalPlan::CreateTable { name, columns } => {
                     tracing::info!("CREATE TABLE {} with {} columns", name, columns.len());
-                    
+
                     let mut schema = HashMap::new();
                     for col in &columns {
                         let col_info = json!({
@@ -178,19 +204,21 @@ impl<'a> ExecutionEngine<'a> {
                         });
                         schema.insert(col.name.clone(), col_info);
                     }
-                    
-                    let schema_json = serde_json::to_string_pretty(&schema)?; 
+
+                    let schema_json = serde_json::to_string_pretty(&schema)?;
                     tracing::debug!("Creating table with schema: {}", schema_json);
                     self.storage.create_table(&name, &schema_json)?;
                     self.storage.wal_flush()?;
                     self.storage.checkpoint()?;
-                    
+
                     tracing::info!("Successfully created table: {}", name);
                     Ok(vec![])
-                }                _ => {
+                }
+                _ => {
                     anyhow::bail!("Unsupported plan type")
                 }
             }
-        }.boxed()
+        }
+        .boxed()
     }
-          }
+}

@@ -12,7 +12,7 @@ impl EncryptionManager {
 
     pub fn encrypt_at_rest(&self, data: &[u8]) -> Result<Vec<u8>> {
         let mut encrypted = Vec::with_capacity(data.len());
-        
+
         for (i, &byte) in data.iter().enumerate() {
             let key_byte = self.master_key[i % self.master_key.len()];
             encrypted.push(byte ^ key_byte);
@@ -32,7 +32,7 @@ impl EncryptionManager {
         let column_key = hasher.finalize();
 
         let mut encrypted = Vec::with_capacity(data.len());
-        
+
         for (i, &byte) in data.iter().enumerate() {
             let key_byte = column_key[i % column_key.len()];
             encrypted.push(byte ^ key_byte);

@@ -25,15 +25,16 @@ impl ColumnarStorage {
 
     pub fn insert(&mut self, tuple: &Tuple) -> Result<()> {
         for (col_name, value) in &tuple.values {
-            let col_data = self.columns.entry(col_name.clone()).or_insert_with(|| {
-                match value {
+            let col_data = self
+                .columns
+                .entry(col_name.clone())
+                .or_insert_with(|| match value {
                     Value::Integer(_) => ColumnData::Integer(Vec::new()),
                     Value::Float(_) => ColumnData::Float(Vec::new()),
                     Value::String(_) => ColumnData::String(Vec::new()),
                     Value::Boolean(_) => ColumnData::Boolean(Vec::new()),
                     Value::Null => ColumnData::Null(0),
-                }
-            });
+                });
 
             match (col_data, value) {
                 (ColumnData::Integer(vec), Value::Integer(v)) => vec.push(*v),
@@ -50,7 +51,9 @@ impl ColumnarStorage {
     }
 
     pub fn scan_column(&self, column: &str, start: usize, end: usize) -> Result<Vec<Value>> {
-        let col_data = self.columns.get(column)
+        let col_data = self
+            .columns
+            .get(column)
             .ok_or_else(|| anyhow::anyhow!("Column not found"))?;
 
         let mut values = Vec::new();
@@ -92,7 +95,9 @@ impl ColumnarStorage {
     }
 
     fn estimate_column_size(&self, column: &str) -> Result<usize> {
-        let col_data = self.columns.get(column)
+        let col_data = self
+            .columns
+            .get(column)
             .ok_or_else(|| anyhow::anyhow!("Column not found"))?;
 
         let size = match col_data {
@@ -109,4 +114,4 @@ impl ColumnarStorage {
     pub fn row_count(&self) -> usize {
         self.row_count
     }
-  }
+}

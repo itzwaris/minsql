@@ -18,7 +18,7 @@ pub struct Config {
 impl Config {
     pub fn from_args() -> Result<Self> {
         let args: Vec<String> = env::args().collect();
-        
+
         let mut node_id = 1;
         let mut data_dir = "./data".to_string();
         let mut port = 5433;

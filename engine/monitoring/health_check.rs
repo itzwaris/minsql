@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
-use sysinfo::{System, Disks};
+use sysinfo::{Disks, System};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HealthStatus {
@@ -44,7 +44,8 @@ impl HealthChecker {
         checks.push(self.check_raft_health());
         checks.push(self.check_storage_health());
 
-        let overall_status = checks.iter()
+        let overall_status = checks
+            .iter()
             .map(|c| &c.status)
             .max_by_key(|s| match s {
                 HealthStatus::Unhealthy => 3,
@@ -63,12 +64,16 @@ impl HealthChecker {
 
     fn check_cpu(&mut self) -> HealthCheck {
         self.system.refresh_cpu_all();
-        
+
         let start = std::time::Instant::now();
-        
-        let avg_cpu = self.system.cpus().iter()
+
+        let avg_cpu = self
+            .system
+            .cpus()
+            .iter()
             .map(|cpu| cpu.cpu_usage())
-            .sum::<f32>() / self.system.cpus().len() as f32;
+            .sum::<f32>()
+            / self.system.cpus().len() as f32;
 
         let status = if avg_cpu > 90.0 {
             HealthStatus::Unhealthy
@@ -88,9 +93,9 @@ impl HealthChecker {
 
     fn check_memory(&mut self) -> HealthCheck {
         self.system.refresh_memory();
-        
+
         let start = std::time::Instant::now();
-        
+
         let total_memory = self.system.total_memory();
         let used_memory = self.system.used_memory();
         let usage_percent = (used_memory as f64 / total_memory as f64) * 100.0;
@@ -106,8 +111,9 @@ impl HealthChecker {
         HealthCheck {
             name: "Memory Usage".to_string(),
             status,
-            message: format!("Memory usage: {:.1}% ({} MB / {} MB)", 
-                usage_percent, 
+            message: format!(
+                "Memory usage: {:.1}% ({} MB / {} MB)",
+                usage_percent,
                 used_memory / 1024 / 1024,
                 total_memory / 1024 / 1024
             ),
@@ -117,16 +123,16 @@ impl HealthChecker {
 
     fn check_disk(&mut self) -> HealthCheck {
         let disks = Disks::new_with_refreshed_list();
-        
+
         let start = std::time::Instant::now();
 
         let mut min_available_percent = 100.0;
-        
+
         for disk in disks.list() {
             let total = disk.total_space();
             let available = disk.available_space();
             let available_percent = (available as f64 / total as f64) * 100.0;
-            
+
             if available_percent < min_available_percent {
                 min_available_percent = available_percent;
             }
@@ -143,7 +149,10 @@ impl HealthChecker {
         HealthCheck {
             name: "Disk Space".to_string(),
             status,
-            message: format!("Minimum available disk space: {:.1}%", min_available_percent),
+            message: format!(
+                "Minimum available disk space: {:.1}%",
+                min_available_percent
+            ),
             duration: start.elapsed(),
         }
     }
@@ -169,4 +178,4 @@ impl HealthChecker {
             duration: start.elapsed(),
         }
     }
-      }
+}

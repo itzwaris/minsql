@@ -1,5 +1,5 @@
-use crate::language::ast::Statement;
 use crate::language::ast::ColumnDefinition;
+use crate::language::ast::Statement;
 use crate::language::intent::*;
 use crate::language::semantic::SemanticAnalyzer;
 use crate::language::JoinType;
@@ -184,4 +184,4 @@ impl LogicalPlanner {
             })
             .collect()
     }
-                  }
+}

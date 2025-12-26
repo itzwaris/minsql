@@ -11,23 +11,17 @@ impl ExpressionEvaluator {
 
     pub fn evaluate(&self, expr: &ExpressionIntent, tuple: &Tuple) -> Result<Value> {
         match expr {
-            ExpressionIntent::Column(name) => {
-                Ok(tuple.get(name).cloned().unwrap_or(Value::Null))
-            }
+            ExpressionIntent::Column(name) => Ok(tuple.get(name).cloned().unwrap_or(Value::Null)),
             ExpressionIntent::QualifiedColumn { column, .. } => {
                 Ok(tuple.get(column).cloned().unwrap_or(Value::Null))
             }
-            ExpressionIntent::Constant(val) => {
-                Ok(self.convert_constant(val))
-            }
+            ExpressionIntent::Constant(val) => Ok(self.convert_constant(val)),
             ExpressionIntent::Arithmetic { op, left, right } => {
                 let left_val = self.evaluate(left, tuple)?;
                 let right_val = self.evaluate(right, tuple)?;
                 self.eval_arithmetic(op, &left_val, &right_val)
             }
-            ExpressionIntent::Function { name, args } => {
-                self.eval_function(name, args, tuple)
-            }
+            ExpressionIntent::Function { name, args } => self.eval_function(name, args, tuple),
         }
     }
 
@@ -40,32 +34,30 @@ impl ExpressionEvaluator {
                 let right_val = self.evaluate(right, tuple)?;
                 self.eval_comparison(op, &left_val, &right_val)
             }
-            FilterIntent::Logical { op, operands } => {
-                match op {
-                    LogicalOp::And => {
-                        for operand in operands {
-                            if !self.evaluate_filter(operand, tuple)? {
-                                return Ok(false);
-                            }
+            FilterIntent::Logical { op, operands } => match op {
+                LogicalOp::And => {
+                    for operand in operands {
+                        if !self.evaluate_filter(operand, tuple)? {
+                            return Ok(false);
                         }
-                        Ok(true)
                     }
-                    LogicalOp::Or => {
-                        for operand in operands {
-                            if self.evaluate_filter(operand, tuple)? {
-                                return Ok(true);
-                            }
-                        }
-                        Ok(false)
-                    }
-                    LogicalOp::Not => {
-                        if operands.len() != 1 {
-                            anyhow::bail!("NOT expects exactly one operand");
-                        }
-                        Ok(!self.evaluate_filter(&operands[0], tuple)?)
-                    }
+                    Ok(true)
                 }
-            }
+                LogicalOp::Or => {
+                    for operand in operands {
+                        if self.evaluate_filter(operand, tuple)? {
+                            return Ok(true);
+                        }
+                    }
+                    Ok(false)
+                }
+                LogicalOp::Not => {
+                    if operands.len() != 1 {
+                        anyhow::bail!("NOT expects exactly one operand");
+                    }
+                    Ok(!self.evaluate_filter(&operands[0], tuple)?)
+                }
+            },
         }
     }
 
@@ -100,36 +92,30 @@ impl ExpressionEvaluator {
 
     fn eval_comparison(&self, op: &ComparisonOp, left: &Value, right: &Value) -> Result<bool> {
         match (left, right) {
-            (Value::Integer(l), Value::Integer(r)) => {
-                Ok(match op {
-                    ComparisonOp::Equal => l == r,
-                    ComparisonOp::NotEqual => l != r,
-                    ComparisonOp::LessThan => l < r,
-                    ComparisonOp::LessThanOrEqual => l <= r,
-                    ComparisonOp::GreaterThan => l > r,
-                    ComparisonOp::GreaterThanOrEqual => l >= r,
-                })
-            }
-            (Value::Float(l), Value::Float(r)) => {
-                Ok(match op {
-                    ComparisonOp::Equal => (l - r).abs() < f64::EPSILON,
-                    ComparisonOp::NotEqual => (l - r).abs() >= f64::EPSILON,
-                    ComparisonOp::LessThan => l < r,
-                    ComparisonOp::LessThanOrEqual => l <= r,
-                    ComparisonOp::GreaterThan => l > r,
-                    ComparisonOp::GreaterThanOrEqual => l >= r,
-                })
-            }
-            (Value::String(l), Value::String(r)) => {
-                Ok(match op {
-                    ComparisonOp::Equal => l == r,
-                    ComparisonOp::NotEqual => l != r,
-                    ComparisonOp::LessThan => l < r,
-                    ComparisonOp::LessThanOrEqual => l <= r,
-                    ComparisonOp::GreaterThan => l > r,
-                    ComparisonOp::GreaterThanOrEqual => l >= r,
-                })
-            }
+            (Value::Integer(l), Value::Integer(r)) => Ok(match op {
+                ComparisonOp::Equal => l == r,
+                ComparisonOp::NotEqual => l != r,
+                ComparisonOp::LessThan => l < r,
+                ComparisonOp::LessThanOrEqual => l <= r,
+                ComparisonOp::GreaterThan => l > r,
+                ComparisonOp::GreaterThanOrEqual => l >= r,
+            }),
+            (Value::Float(l), Value::Float(r)) => Ok(match op {
+                ComparisonOp::Equal => (l - r).abs() < f64::EPSILON,
+                ComparisonOp::NotEqual => (l - r).abs() >= f64::EPSILON,
+                ComparisonOp::LessThan => l < r,
+                ComparisonOp::LessThanOrEqual => l <= r,
+                ComparisonOp::GreaterThan => l > r,
+                ComparisonOp::GreaterThanOrEqual => l >= r,
+            }),
+            (Value::String(l), Value::String(r)) => Ok(match op {
+                ComparisonOp::Equal => l == r,
+                ComparisonOp::NotEqual => l != r,
+                ComparisonOp::LessThan => l < r,
+                ComparisonOp::LessThanOrEqual => l <= r,
+                ComparisonOp::GreaterThan => l > r,
+                ComparisonOp::GreaterThanOrEqual => l >= r,
+            }),
             _ => anyhow::bail!("Type mismatch in comparison"),
         }
     }
@@ -164,4 +150,4 @@ impl ExpressionEvaluator {
             ConstantValue::String(s) => Value::String(s.clone()),
         }
     }
-                   }
+}

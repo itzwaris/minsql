@@ -1,5 +1,5 @@
 use std::sync::atomic::{AtomicU64, Ordering};
-use tokio::time::{Duration, interval};
+use tokio::time::{interval, Duration};
 
 pub struct MetricsRegistry {
     queries_executed: AtomicU64,

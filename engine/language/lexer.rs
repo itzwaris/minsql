@@ -36,35 +36,35 @@ pub enum Token {
     As,
     With,
     Select,
-    
+
     Identifier(String),
     String(String),
     Integer(i64),
     Float(f64),
-    
+
     LeftParen,
     RightParen,
     Comma,
     Semicolon,
     Dot,
     Star,
-    
+
     Equals,
     NotEquals,
     LessThan,
     LessThanOrEqual,
     GreaterThan,
     GreaterThanOrEqual,
-    
+
     Plus,
     Minus,
     Multiply,
     Divide,
-    
+
     And,
     Or,
     Not,
-    
+
     Eof,
 }
 
@@ -360,4 +360,4 @@ impl Lexer {
     fn advance(&mut self) {
         self.position += 1;
     }
-              }
+}

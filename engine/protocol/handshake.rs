@@ -47,13 +47,13 @@ impl HandshakeRequest {
 
         let protocol_version = buf.get_u32();
         let client_name_len = buf.get_u32() as usize;
-        
+
         if buf.remaining() < client_name_len {
             anyhow::bail!("Incomplete handshake request");
         }
 
-        let client_name = String::from_utf8(buf[..client_name_len].to_vec())
-            .context("Invalid client name")?;
+        let client_name =
+            String::from_utf8(buf[..client_name_len].to_vec()).context("Invalid client name")?;
 
         Ok(Self {
             protocol_version,
@@ -85,7 +85,7 @@ impl HandshakeResponse {
 
         let protocol_version = buf.get_u32();
         let server_version_len = buf.get_u32() as usize;
-        
+
         if buf.remaining() < server_version_len {
             anyhow::bail!("Incomplete handshake response");
         }
@@ -106,8 +106,11 @@ impl HandshakeResponse {
 
 pub async fn perform_handshake(stream: &mut TcpStream, node_id: u32) -> Result<HandshakeRequest> {
     let mut buf = vec![0u8; 1024];
-    let n = stream.read(&mut buf).await.context("Failed to read handshake")?;
-    
+    let n = stream
+        .read(&mut buf)
+        .await
+        .context("Failed to read handshake")?;
+
     if n == 0 {
         anyhow::bail!("Connection closed during handshake");
     }

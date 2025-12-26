@@ -29,8 +29,14 @@ pub enum Intent {
 pub enum ColumnIntent {
     All,
     Named(String),
-    Qualified { table: String, column: String },
-    Expression { expr: ExpressionIntent, alias: Option<String> },
+    Qualified {
+        table: String,
+        column: String,
+    },
+    Expression {
+        expr: ExpressionIntent,
+        alias: Option<String>,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -81,7 +87,10 @@ pub enum LogicalOp {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ExpressionIntent {
     Column(String),
-    QualifiedColumn { table: String, column: String },
+    QualifiedColumn {
+        table: String,
+        column: String,
+    },
     Constant(ConstantValue),
     Arithmetic {
         op: ArithmeticOp,

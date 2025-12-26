@@ -44,7 +44,7 @@ impl DeterministicScheduler {
 
     pub async fn execute_next(&self) -> Option<TaskId> {
         let mut queue = self.ready_queue.lock().await;
-        
+
         if let Some((task_id, task)) = queue.pop_first() {
             drop(queue);
             (task.work)();

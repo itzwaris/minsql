@@ -109,10 +109,7 @@ impl SchemaGenerator {
                             required: false,
                         },
                     ],
-                    sql_template: format!(
-                        "retrieve * from {} limit $limit offset $offset",
-                        table
-                    ),
+                    sql_template: format!("retrieve * from {} limit $limit offset $offset", table),
                 },
             );
         }
@@ -174,4 +171,4 @@ impl SchemaGenerator {
 
         sdl
     }
-                }
+}

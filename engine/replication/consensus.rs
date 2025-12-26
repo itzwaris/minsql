@@ -36,7 +36,7 @@ impl RaftNode {
     pub async fn run(self: Arc<Self>) -> Result<()> {
         loop {
             let mut rx = self.command_rx.lock().await;
-            
+
             if let Some(_command) = rx.recv().await {
                 drop(rx);
             } else {

@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use bytes::{Buf, BufMut, BytesMut};
+use bytes::{BufMut, BytesMut};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
@@ -58,18 +58,27 @@ impl Frame {
     }
 
     pub async fn read_from(stream: &mut TcpStream) -> Result<Self> {
-        let length = stream.read_u32().await.context("Failed to read frame length")?;
-        
+        let length = stream
+            .read_u32()
+            .await
+            .context("Failed to read frame length")?;
+
         if length == 0 || length > 100 * 1024 * 1024 {
             anyhow::bail!("Invalid frame length: {}", length);
         }
 
-        let message_type_byte = stream.read_u8().await.context("Failed to read message type")?;
+        let message_type_byte = stream
+            .read_u8()
+            .await
+            .context("Failed to read message type")?;
         let message_type = MessageType::from_u8(message_type_byte)?;
 
         let payload_len = (length - 1) as usize;
         let mut payload = vec![0u8; payload_len];
-        stream.read_exact(&mut payload).await.context("Failed to read payload")?;
+        stream
+            .read_exact(&mut payload)
+            .await
+            .context("Failed to read payload")?;
 
         Ok(Self {
             message_type,

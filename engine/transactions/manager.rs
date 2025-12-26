@@ -1,10 +1,10 @@
-use crate::transactions::snapshot::Snapshot;
 use crate::determinism::clock::LogicalTime;
+use crate::transactions::snapshot::Snapshot;
 use anyhow::Result;
-use serde::{Serialize, Deserialize};
+use dashmap::DashMap;
+use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
-use dashmap::DashMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct TransactionId(pub u64);
@@ -103,4 +103,4 @@ impl TransactionManager {
             .map(|entry| entry.snapshot.clone())
             .ok_or_else(|| anyhow::anyhow!("Transaction not found"))
     }
-      }
+}

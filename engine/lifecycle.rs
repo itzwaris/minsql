@@ -18,7 +18,7 @@ pub struct Lifecycle {
 impl Lifecycle {
     pub async fn new(config: Config) -> Result<Self> {
         let storage = Arc::new(StorageEngine::new(&config.data_dir)?);
-        
+
         storage.recover()?;
 
         let metrics = Arc::new(MetricsRegistry::new());
@@ -50,25 +50,17 @@ impl Lifecycle {
 
         let raft_handle = {
             let raft_node = self.raft_node.clone();
-            tokio::spawn(async move {
-                raft_node.run().await
-            })
+            tokio::spawn(async move { raft_node.run().await })
         };
 
         let storage_for_shutdown = self.storage.clone();
         let config_node_id = self.config.node_id;
-        
-        let server_handle = {
-            tokio::spawn(async move {
-                self.server.serve().await
-            })
-        };
+
+        let server_handle = { tokio::spawn(async move { self.server.serve().await }) };
 
         let metrics_handle = {
             let metrics = self.metrics.clone();
-            tokio::spawn(async move {
-                metrics.report_loop().await
-            })
+            tokio::spawn(async move { metrics.report_loop().await })
         };
 
         tokio::select! {
@@ -91,7 +83,7 @@ impl Lifecycle {
         storage_for_shutdown.checkpoint()?;
         storage_for_shutdown.shutdown();
         tracing::info!("Shutdown complete");
-        
+
         Ok(())
     }
 

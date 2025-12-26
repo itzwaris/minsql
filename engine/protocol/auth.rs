@@ -23,7 +23,7 @@ impl Credentials {
         let mut hasher = Sha256::new();
         hasher.update(password.as_bytes());
         let hash = hasher.finalize().to_vec();
-        
+
         self.password_hash == hash
     }
 }
@@ -48,7 +48,7 @@ impl AuthManager {
 
     pub fn authenticate(&self, username: &str, password: &str) -> Result<()> {
         let entry = self.users.get(username);
-        
+
         match entry {
             Some(creds) => {
                 if creds.verify(password) {
@@ -66,7 +66,8 @@ impl AuthManager {
             anyhow::bail!("User already exists");
         }
 
-        self.users.insert(username.clone(), Credentials::new(username, password));
+        self.users
+            .insert(username.clone(), Credentials::new(username, password));
         Ok(())
     }
 }

@@ -45,10 +45,10 @@ impl PlacementStrategy {
 
         for node_id in 0..num_nodes {
             let load = self.node_loads.get(&node_id).copied().unwrap_or(0);
-            
+
             if load > target_load + 1 {
                 // Need to move shards off this node
             }
         }
     }
-      }
+}

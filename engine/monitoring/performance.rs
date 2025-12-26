@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use tokio::sync::Mutex;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -35,7 +35,12 @@ impl PerformanceMonitor {
         }
     }
 
-    pub async fn record_query(&self, query: String, execution_time: Duration, rows_returned: usize) {
+    pub async fn record_query(
+        &self,
+        query: String,
+        execution_time: Duration,
+        rows_returned: usize,
+    ) {
         let mut queries = self.recent_queries.lock().await;
 
         let perf = QueryPerformance {
@@ -66,9 +71,7 @@ impl PerformanceMonitor {
             };
         }
 
-        let mut times: Vec<Duration> = queries.iter()
-            .map(|q| q.execution_time)
-            .collect();
+        let mut times: Vec<Duration> = queries.iter().map(|q| q.execution_time).collect();
         times.sort();
 
         let total: Duration = times.iter().sum();
@@ -78,9 +81,18 @@ impl PerformanceMonitor {
         let p95_idx = (times.len() as f64 * 0.95) as usize;
         let p99_idx = (times.len() as f64 * 0.99) as usize;
 
-        let p50 = times.get(p50_idx).copied().unwrap_or(Duration::from_secs(0));
-        let p95 = times.get(p95_idx).copied().unwrap_or(Duration::from_secs(0));
-        let p99 = times.get(p99_idx).copied().unwrap_or(Duration::from_secs(0));
+        let p50 = times
+            .get(p50_idx)
+            .copied()
+            .unwrap_or(Duration::from_secs(0));
+        let p95 = times
+            .get(p95_idx)
+            .copied()
+            .unwrap_or(Duration::from_secs(0));
+        let p99 = times
+            .get(p99_idx)
+            .copied()
+            .unwrap_or(Duration::from_secs(0));
 
         let mut sorted_queries: Vec<QueryPerformance> = queries.iter().cloned().collect();
         sorted_queries.sort_by(|a, b| b.execution_time.cmp(&a.execution_time));
@@ -98,8 +110,9 @@ impl PerformanceMonitor {
 
     pub async fn get_slow_queries(&self, threshold: Duration) -> Vec<QueryPerformance> {
         let queries = self.recent_queries.lock().await;
-        
-        queries.iter()
+
+        queries
+            .iter()
             .filter(|q| q.execution_time > threshold)
             .cloned()
             .collect()
@@ -109,4 +122,4 @@ impl PerformanceMonitor {
         let mut queries = self.recent_queries.lock().await;
         queries.clear();
     }
-          }
+}

@@ -1,4 +1,3 @@
-use crate::language::intent::*;
 use crate::planner::logical::LogicalPlan;
 use anyhow::Result;
 
@@ -18,36 +17,34 @@ impl Optimizer {
 
     fn push_down_filters(&self, plan: LogicalPlan) -> Result<LogicalPlan> {
         match plan {
-            LogicalPlan::Filter { predicate, input } => {
-                match *input {
-                    LogicalPlan::Join {
-                        join_type,
-                        left,
-                        right,
-                        condition,
-                    } => {
-                        let optimized_left = self.push_down_filters(*left)?;
-                        let optimized_right = self.push_down_filters(*right)?;
+            LogicalPlan::Filter { predicate, input } => match *input {
+                LogicalPlan::Join {
+                    join_type,
+                    left,
+                    right,
+                    condition,
+                } => {
+                    let optimized_left = self.push_down_filters(*left)?;
+                    let optimized_right = self.push_down_filters(*right)?;
 
-                        Ok(LogicalPlan::Filter {
-                            predicate,
-                            input: Box::new(LogicalPlan::Join {
-                                join_type,
-                                left: Box::new(optimized_left),
-                                right: Box::new(optimized_right),
-                                condition,
-                            }),
-                        })
-                    }
-                    _ => {
-                        let optimized_input = self.push_down_filters(*input)?;
-                        Ok(LogicalPlan::Filter {
-                            predicate,
-                            input: Box::new(optimized_input),
-                        })
-                    }
+                    Ok(LogicalPlan::Filter {
+                        predicate,
+                        input: Box::new(LogicalPlan::Join {
+                            join_type,
+                            left: Box::new(optimized_left),
+                            right: Box::new(optimized_right),
+                            condition,
+                        }),
+                    })
                 }
-            }
+                _ => {
+                    let optimized_input = self.push_down_filters(*input)?;
+                    Ok(LogicalPlan::Filter {
+                        predicate,
+                        input: Box::new(optimized_input),
+                    })
+                }
+            },
             LogicalPlan::Project { columns, input } => {
                 let optimized_input = self.push_down_filters(*input)?;
                 Ok(LogicalPlan::Project {
@@ -113,4 +110,4 @@ impl Optimizer {
             _ => Ok(plan),
         }
     }
-                          }
+}

@@ -100,11 +100,7 @@ impl PubSubBroker {
         history.push(message);
     }
 
-    pub async fn get_message_history(
-        &self,
-        channel: Option<String>,
-        limit: usize,
-    ) -> Vec<Message> {
+    pub async fn get_message_history(&self, channel: Option<String>, limit: usize) -> Vec<Message> {
         let history = self.message_history.read().await;
 
         history

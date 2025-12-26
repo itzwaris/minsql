@@ -1,11 +1,11 @@
+use crate::execution::engine::ExecutionEngine;
 use crate::ffi::storage::StorageEngine;
 use crate::language::parser::Parser;
 use crate::planner::logical::LogicalPlanner;
 use crate::planner::physical::PhysicalPlanner;
-use crate::execution::engine::ExecutionEngine;
+use crate::protocol::{handshake, Frame, MessageType};
 use crate::replication::consensus::RaftNode;
 use crate::telemetry::metrics::MetricsRegistry;
-use crate::protocol::{handshake, Frame, MessageType};
 use anyhow::Result;
 use std::sync::Arc;
 use tokio::net::{TcpListener, TcpStream};
@@ -35,7 +35,7 @@ impl Server {
     pub async fn serve(self) -> Result<()> {
         let addr = format!("0.0.0.0:{}", self.port);
         let listener = TcpListener::bind(&addr).await?;
-        
+
         tracing::info!("Server listening on {}", addr);
 
         loop {
@@ -69,32 +69,26 @@ async fn handle_connection(
         match frame.message_type {
             MessageType::Query => {
                 let query_text = String::from_utf8(frame.payload)?;
-                
+
                 metrics.increment_queries();
 
                 let response = match execute_query(&query_text, &storage).await {
                     Ok(result) => {
                         Frame::new(MessageType::QueryResponse, serde_json::to_vec(&result)?)
                     }
-                    Err(e) => {
-                        Frame::new(MessageType::Error, e.to_string().as_bytes().to_vec())
-                    }
+                    Err(e) => Frame::new(MessageType::Error, e.to_string().as_bytes().to_vec()),
                 };
 
                 response.write_to(&mut stream).await?;
             }
             MessageType::Execute => {
                 let statement = String::from_utf8(frame.payload)?;
-                
+
                 metrics.increment_executions();
 
                 let response = match execute_statement(&statement, &storage, &raft_node).await {
-                    Ok(()) => {
-                        Frame::new(MessageType::ExecuteResponse, b"OK".to_vec())
-                    }
-                    Err(e) => {
-                        Frame::new(MessageType::Error, e.to_string().as_bytes().to_vec())
-                    }
+                    Ok(()) => Frame::new(MessageType::ExecuteResponse, b"OK".to_vec()),
+                    Err(e) => Frame::new(MessageType::Error, e.to_string().as_bytes().to_vec()),
                 };
 
                 response.write_to(&mut stream).await?;
@@ -126,13 +120,15 @@ async fn execute_query(query_text: &str, storage: &StorageEngine) -> Result<serd
 
 async fn execute_statement(
     statement: &str,
-    storage: &StorageEngine,
+    _storage: &StorageEngine,
     raft_node: &RaftNode,
 ) -> Result<()> {
     let mut parser = Parser::new();
     let _ast = parser.parse(statement)?;
 
-    raft_node.propose_command(statement.as_bytes().to_vec()).await?;
+    raft_node
+        .propose_command(statement.as_bytes().to_vec())
+        .await?;
 
     Ok(())
-              }
+}

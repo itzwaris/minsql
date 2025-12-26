@@ -48,14 +48,12 @@ impl HashAggregate {
     fn finalize(&mut self) -> Result<()> {
         let mut results = Vec::new();
 
-        for (group_key, state) in &self.groups {
+        for (_group_key, state) in &self.groups {
             let mut tuple = Tuple::new();
-            
+
             for agg in &self.aggregates {
                 let value = state.finalize(&agg.function);
-                let col_name = agg.alias.as_ref()
-                    .unwrap_or(&agg.function)
-                    .clone();
+                let col_name = agg.alias.as_ref().unwrap_or(&agg.function).clone();
                 tuple.insert(col_name, value);
             }
 
@@ -91,11 +89,11 @@ impl AggregateState {
     fn accumulate(&mut self, _aggregates: &[AggregateIntent], _tuple: &Tuple) {
         self.count += 1;
         self.sum += 1.0;
-        
+
         if self.min.is_none() {
             self.min = Some(1.0);
         }
-        
+
         if self.max.is_none() {
             self.max = Some(1.0);
         }
@@ -117,4 +115,4 @@ impl AggregateState {
             _ => Value::Null,
         }
     }
-      }
+}

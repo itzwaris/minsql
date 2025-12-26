@@ -17,7 +17,10 @@ impl HashJoin {
 
         for tuple in &right {
             let key = Self::extract_join_key(tuple);
-            hash_table.entry(key).or_insert_with(Vec::new).push(tuple.clone());
+            hash_table
+                .entry(key)
+                .or_insert_with(Vec::new)
+                .push(tuple.clone());
         }
 
         Self {
@@ -38,7 +41,7 @@ impl HashJoin {
         self.position += 1;
 
         let key = Self::extract_join_key(left_tuple);
-        
+
         if let Some(matches) = self.hash_table.get(&key) {
             if let Some(right_tuple) = matches.first() {
                 let mut joined = left_tuple.clone();

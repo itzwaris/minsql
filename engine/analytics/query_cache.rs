@@ -29,10 +29,10 @@ impl QueryCache {
 
     pub async fn get(&self, query: &str) -> Option<Vec<Tuple>> {
         let mut cache = self.cache.write().await;
-        
+
         if let Some(entry) = cache.get_mut(query) {
             let age = SystemTime::now().duration_since(entry.created_at).ok()?;
-            
+
             if age < self.ttl {
                 entry.access_count += 1;
                 return Some(entry.results.clone());
@@ -51,20 +51,23 @@ impl QueryCache {
             self.evict_lru(&mut cache);
         }
 
-        cache.insert(query, CacheEntry {
-            results,
-            created_at: SystemTime::now(),
-            access_count: 0,
-        });
+        cache.insert(
+            query,
+            CacheEntry {
+                results,
+                created_at: SystemTime::now(),
+                access_count: 0,
+            },
+        );
 
         Ok(())
     }
 
     pub async fn invalidate(&self, pattern: &str) -> Result<()> {
         let mut cache = self.cache.write().await;
-        
+
         cache.retain(|key, _| !key.contains(pattern));
-        
+
         Ok(())
     }
 
@@ -75,10 +78,10 @@ impl QueryCache {
 
     pub async fn stats(&self) -> CacheStats {
         let cache = self.cache.read().await;
-        
+
         let total_entries = cache.len();
         let total_accesses: u64 = cache.values().map(|e| e.access_count).sum();
-        
+
         CacheStats {
             entries: total_entries,
             total_accesses,
@@ -87,7 +90,8 @@ impl QueryCache {
     }
 
     fn evict_lru(&self, cache: &mut HashMap<String, CacheEntry>) {
-        if let Some(lru_key) = cache.iter()
+        if let Some(lru_key) = cache
+            .iter()
             .min_by_key(|(_, entry)| entry.access_count)
             .map(|(k, _)| k.clone())
         {
@@ -118,4 +122,4 @@ pub struct CacheStats {
     pub entries: usize,
     pub total_accesses: u64,
     pub max_size: usize,
-          }
+}

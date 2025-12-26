@@ -82,24 +82,18 @@ impl<'a> PhysicalPlanner<'a> {
 
     pub fn plan(&self, logical_plan: &LogicalPlan) -> Result<PhysicalPlan> {
         match logical_plan {
-            LogicalPlan::Scan { table, columns } => {
-                Ok(PhysicalPlan::SeqScan {
-                    table: table.clone(),
-                    columns: columns.clone(),
-                })
-            }
-            LogicalPlan::Filter { predicate, input } => {
-                Ok(PhysicalPlan::Filter {
-                    predicate: predicate.clone(),
-                    input: Box::new(self.plan(input)?),
-                })
-            }
-            LogicalPlan::Project { columns, input } => {
-                Ok(PhysicalPlan::Project {
-                    columns: columns.clone(),
-                    input: Box::new(self.plan(input)?),
-                })
-            }
+            LogicalPlan::Scan { table, columns } => Ok(PhysicalPlan::SeqScan {
+                table: table.clone(),
+                columns: columns.clone(),
+            }),
+            LogicalPlan::Filter { predicate, input } => Ok(PhysicalPlan::Filter {
+                predicate: predicate.clone(),
+                input: Box::new(self.plan(input)?),
+            }),
+            LogicalPlan::Project { columns, input } => Ok(PhysicalPlan::Project {
+                columns: columns.clone(),
+                input: Box::new(self.plan(input)?),
+            }),
             LogicalPlan::Join {
                 join_type,
                 left,
@@ -120,64 +114,50 @@ impl<'a> PhysicalPlanner<'a> {
                 group_by,
                 aggregates,
                 input,
-            } => {
-                Ok(PhysicalPlan::HashAggregate {
-                    group_by: group_by.clone(),
-                    aggregates: aggregates.clone(),
-                    input: Box::new(self.plan(input)?),
-                })
-            }
-            LogicalPlan::Sort { order_by, input } => {
-                Ok(PhysicalPlan::Sort {
-                    order_by: order_by.clone(),
-                    input: Box::new(self.plan(input)?),
-                })
-            }
+            } => Ok(PhysicalPlan::HashAggregate {
+                group_by: group_by.clone(),
+                aggregates: aggregates.clone(),
+                input: Box::new(self.plan(input)?),
+            }),
+            LogicalPlan::Sort { order_by, input } => Ok(PhysicalPlan::Sort {
+                order_by: order_by.clone(),
+                input: Box::new(self.plan(input)?),
+            }),
             LogicalPlan::Limit {
                 count,
                 offset,
                 input,
-            } => {
-                Ok(PhysicalPlan::Limit {
-                    count: *count,
-                    offset: *offset,
-                    input: Box::new(self.plan(input)?),
-                })
-            }
+            } => Ok(PhysicalPlan::Limit {
+                count: *count,
+                offset: *offset,
+                input: Box::new(self.plan(input)?),
+            }),
             LogicalPlan::Insert {
                 table,
                 columns,
                 values,
-            } => {
-                Ok(PhysicalPlan::Insert {
-                    table: table.clone(),
-                    columns: columns.clone(),
-                    values: values.clone(),
-                })
-            }
+            } => Ok(PhysicalPlan::Insert {
+                table: table.clone(),
+                columns: columns.clone(),
+                values: values.clone(),
+            }),
             LogicalPlan::Update {
                 table,
                 assignments,
                 filter,
-            } => {
-                Ok(PhysicalPlan::Update {
-                    table: table.clone(),
-                    assignments: assignments.clone(),
-                    filter: filter.clone(),
-                })
-            }
-            LogicalPlan::Delete { table, filter } => {
-                Ok(PhysicalPlan::Delete {
-                    table: table.clone(),
-                    filter: filter.clone(),
-                })
-            }
-            LogicalPlan::CreateTable { name, columns } => {
-                Ok(PhysicalPlan::CreateTable {
-                    name: name.clone(),
-                    columns: columns.clone(),
-                })
-            }
+            } => Ok(PhysicalPlan::Update {
+                table: table.clone(),
+                assignments: assignments.clone(),
+                filter: filter.clone(),
+            }),
+            LogicalPlan::Delete { table, filter } => Ok(PhysicalPlan::Delete {
+                table: table.clone(),
+                filter: filter.clone(),
+            }),
+            LogicalPlan::CreateTable { name, columns } => Ok(PhysicalPlan::CreateTable {
+                name: name.clone(),
+                columns: columns.clone(),
+            }),
         }
     }
 }

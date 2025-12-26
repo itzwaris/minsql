@@ -50,7 +50,10 @@ impl ContinuousQueryEngine {
 
         let (tx, mut rx) = mpsc::channel(1000);
 
-        self.data_streams.write().await.insert(source_table.clone(), tx);
+        self.data_streams
+            .write()
+            .await
+            .insert(source_table.clone(), tx);
 
         let cq_clone = cq.clone();
         tokio::spawn(async move {
@@ -63,7 +66,7 @@ impl ContinuousQueryEngine {
                 let elapsed = window_start.elapsed();
                 if elapsed >= cq_clone.window_size {
                     Self::process_window(&cq_clone, &window_buffer).await;
-                    
+
                     match cq_clone.window_type {
                         WindowType::Tumbling => {
                             window_buffer.clear();
@@ -71,7 +74,7 @@ impl ContinuousQueryEngine {
                         }
                         WindowType::Sliding => {
                             let slide_amount = cq_clone.window_size / 2;
-                            let cutoff = window_start + slide_amount;
+                            let _cutoff = window_start + slide_amount;
                             window_start = std::time::Instant::now();
                         }
                         WindowType::Session => {
@@ -97,7 +100,7 @@ impl ContinuousQueryEngine {
 
     pub async fn emit_to_stream(&self, table: &str, tuple: Tuple) -> Result<()> {
         let streams = self.data_streams.read().await;
-        
+
         if let Some(tx) = streams.get(table) {
             tx.send(tuple).await.ok();
         }
@@ -113,4 +116,4 @@ impl ContinuousQueryEngine {
     pub async fn list_continuous_queries(&self) -> Vec<ContinuousQuery> {
         self.queries.read().await.values().cloned().collect()
     }
-  }
+}

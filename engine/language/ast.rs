@@ -127,11 +127,24 @@ pub struct OrderByClause {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Expression {
     Column(String),
-    QualifiedColumn { table: String, column: String },
+    QualifiedColumn {
+        table: String,
+        column: String,
+    },
     Literal(Literal),
-    BinaryOp { op: BinaryOperator, left: Box<Expression>, right: Box<Expression> },
-    UnaryOp { op: UnaryOperator, operand: Box<Expression> },
-    FunctionCall { name: String, args: Vec<Expression> },
+    BinaryOp {
+        op: BinaryOperator,
+        left: Box<Expression>,
+        right: Box<Expression>,
+    },
+    UnaryOp {
+        op: UnaryOperator,
+        operand: Box<Expression>,
+    },
+    FunctionCall {
+        name: String,
+        args: Vec<Expression>,
+    },
     Star,
 }
 

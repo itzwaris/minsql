@@ -60,7 +60,13 @@ impl AuditLogger {
         Ok(())
     }
 
-    pub async fn log_query(&self, user: String, query: String, success: bool, error: Option<String>) -> Result<()> {
+    pub async fn log_query(
+        &self,
+        user: String,
+        query: String,
+        success: bool,
+        error: Option<String>,
+    ) -> Result<()> {
         let event = AuditEvent {
             event_id: 0,
             event_type: AuditEventType::QueryExecution,
@@ -76,7 +82,12 @@ impl AuditLogger {
         self.log_event(event).await
     }
 
-    pub async fn log_authentication(&self, user: String, success: bool, ip_address: Option<String>) -> Result<()> {
+    pub async fn log_authentication(
+        &self,
+        user: String,
+        success: bool,
+        ip_address: Option<String>,
+    ) -> Result<()> {
         let event = AuditEvent {
             event_id: 0,
             event_type: AuditEventType::Authentication,
@@ -92,7 +103,12 @@ impl AuditLogger {
         self.log_event(event).await
     }
 
-    pub async fn log_schema_change(&self, user: String, query: String, table: String) -> Result<()> {
+    pub async fn log_schema_change(
+        &self,
+        user: String,
+        query: String,
+        table: String,
+    ) -> Result<()> {
         let event = AuditEvent {
             event_id: 0,
             event_type: AuditEventType::SchemaChange,

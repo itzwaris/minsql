@@ -64,7 +64,7 @@ impl AlertManager {
 
     pub async fn acknowledge_alert(&self, alert_id: u64) -> anyhow::Result<()> {
         let mut alerts = self.alerts.lock().await;
-        
+
         if let Some(alert) = alerts.iter_mut().find(|a| a.id == alert_id) {
             alert.acknowledged = true;
             Ok(())
@@ -75,15 +75,13 @@ impl AlertManager {
 
     pub async fn get_active_alerts(&self) -> Vec<Alert> {
         let alerts = self.alerts.lock().await;
-        alerts.iter()
-            .filter(|a| !a.acknowledged)
-            .cloned()
-            .collect()
+        alerts.iter().filter(|a| !a.acknowledged).cloned().collect()
     }
 
     pub async fn get_critical_alerts(&self) -> Vec<Alert> {
         let alerts = self.alerts.lock().await;
-        alerts.iter()
+        alerts
+            .iter()
             .filter(|a| !a.acknowledged && a.severity == AlertSeverity::Critical)
             .cloned()
             .collect()
@@ -92,7 +90,7 @@ impl AlertManager {
     pub async fn clear_old_alerts(&self, hours: i64) {
         let mut alerts = self.alerts.lock().await;
         let cutoff = chrono::Utc::now() - chrono::Duration::hours(hours);
-        
+
         alerts.retain(|a| a.timestamp > cutoff || !a.acknowledged);
     }
 }

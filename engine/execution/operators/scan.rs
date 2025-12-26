@@ -11,7 +11,7 @@ pub struct SeqScan {
 impl SeqScan {
     pub fn new(table: String, columns: Vec<String>) -> Self {
         let data = Self::generate_mock_data(&table, &columns);
-        
+
         Self {
             table,
             columns,
@@ -30,12 +30,12 @@ impl SeqScan {
         Ok(Some(tuple))
     }
 
-    fn generate_mock_data(table: &str, columns: &[String]) -> Vec<Tuple> {
+    fn generate_mock_data(_table: &str, columns: &[String]) -> Vec<Tuple> {
         let mut data = Vec::new();
 
         for i in 0..10 {
             let mut tuple = Tuple::new();
-            
+
             for col in columns {
                 match col.as_str() {
                     "id" => tuple.insert(col.clone(), Value::Integer(i as i64)),

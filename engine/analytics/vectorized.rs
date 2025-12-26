@@ -46,9 +46,13 @@ impl VectorizedExecutor {
         Self
     }
 
-    pub fn filter_batch(&self, batch: &VectorBatch, predicate: impl Fn(&Tuple) -> bool) -> VectorBatch {
+    pub fn filter_batch(
+        &self,
+        batch: &VectorBatch,
+        predicate: impl Fn(&Tuple) -> bool,
+    ) -> VectorBatch {
         let mut result = VectorBatch::new();
-        
+
         for tuple in batch.iter() {
             if predicate(tuple) {
                 result.add(tuple.clone());
@@ -112,8 +116,8 @@ impl VectorizedExecutor {
 
         for left_tuple in left.iter() {
             for right_tuple in right.iter() {
-                if let (Some(left_val), Some(right_val)) = 
-                    (left_tuple.get(left_key), right_tuple.get(right_key)) 
+                if let (Some(left_val), Some(right_val)) =
+                    (left_tuple.get(left_key), right_tuple.get(right_key))
                 {
                     if self.values_equal(left_val, right_val) {
                         let mut joined = left_tuple.clone();
@@ -139,4 +143,4 @@ impl VectorizedExecutor {
             _ => false,
         }
     }
-      }
+}

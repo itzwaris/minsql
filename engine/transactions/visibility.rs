@@ -17,11 +17,7 @@ impl VisibilityChecker {
         snapshot.is_visible(xmin, xmax)
     }
 
-    pub fn can_update(
-        &self,
-        snapshot: &Snapshot,
-        tuple_xmax: Option<TransactionId>,
-    ) -> bool {
+    pub fn can_update(&self, _snapshot: &Snapshot, tuple_xmax: Option<TransactionId>) -> bool {
         if let Some(xmax) = tuple_xmax {
             if xmax.0 != 0 {
                 return false;

@@ -38,7 +38,7 @@ impl MaterializedViewManager {
 
     pub async fn refresh_view(&self, name: &str) -> Result<()> {
         let mut views = self.views.write().await;
-        
+
         if let Some(view) = views.get_mut(name) {
             view.last_refresh = std::time::SystemTime::now();
             Ok(())
@@ -49,7 +49,7 @@ impl MaterializedViewManager {
 
     pub async fn query_view(&self, name: &str) -> Result<Vec<Tuple>> {
         let views = self.views.read().await;
-        
+
         if let Some(view) = views.get(name) {
             Ok(view.data.clone())
         } else {
@@ -59,7 +59,7 @@ impl MaterializedViewManager {
 
     pub async fn drop_view(&self, name: &str) -> Result<()> {
         let mut views = self.views.write().await;
-        
+
         if views.remove(name).is_some() {
             Ok(())
         } else {
@@ -79,7 +79,7 @@ impl MaterializedViewManager {
             interval.tick().await;
 
             let view_names = self.list_views().await;
-            
+
             for name in view_names {
                 if let Err(e) = self.refresh_view(&name).await {
                     tracing::error!("Failed to refresh view {}: {}", name, e);

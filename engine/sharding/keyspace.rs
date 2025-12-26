@@ -1,4 +1,3 @@
-use blake3::Hash;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
@@ -41,4 +40,4 @@ impl Keyspace {
     pub fn get_shard_range(&self, shard_id: ShardId) -> Option<&KeyRange> {
         self.ranges.iter().find(|r| r.shard_id == shard_id)
     }
-      }
+}

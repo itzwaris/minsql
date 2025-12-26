@@ -1,21 +1,21 @@
-mod config;
-mod lifecycle;
-mod protocol;
-mod language;
-mod planner;
-mod execution;
-mod transactions;
-mod determinism;
-mod sharding;
-mod replication;
-mod udf;
-mod ffi;
-mod telemetry;
 mod analytics;
-mod security;
-mod monitoring;
-mod streams;
+mod config;
+mod determinism;
+mod execution;
+mod ffi;
 mod graphql;
+mod language;
+mod lifecycle;
+mod monitoring;
+mod planner;
+mod protocol;
+mod replication;
+mod security;
+mod sharding;
+mod streams;
+mod telemetry;
+mod transactions;
+mod udf;
 
 use anyhow::Result;
 use config::Config;
@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
         .init();
 
     let config = Config::from_args()?;
-    
+
     tracing::info!("Starting minsql node {}", config.node_id);
     tracing::info!("Data directory: {}", config.data_dir);
     tracing::info!("Listening on port {}", config.port);

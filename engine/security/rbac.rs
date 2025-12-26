@@ -107,7 +107,9 @@ impl RBACManager {
     }
 
     pub fn grant_permission(&mut self, role_name: &str, permission: Permission) -> Result<()> {
-        let role = self.roles.get_mut(role_name)
+        let role = self
+            .roles
+            .get_mut(role_name)
             .ok_or_else(|| anyhow::anyhow!("Role not found: {}", role_name))?;
 
         role.permissions.insert(permission);
@@ -115,7 +117,9 @@ impl RBACManager {
     }
 
     pub fn revoke_permission(&mut self, role_name: &str, permission: &Permission) -> Result<()> {
-        let role = self.roles.get_mut(role_name)
+        let role = self
+            .roles
+            .get_mut(role_name)
             .ok_or_else(|| anyhow::anyhow!("Role not found: {}", role_name))?;
 
         role.permissions.remove(permission);
@@ -133,13 +137,18 @@ impl RBACManager {
             }
         }
 
-        let user = User { username: username.clone(), roles };
+        let user = User {
+            username: username.clone(),
+            roles,
+        };
         self.users.insert(username, user);
         Ok(())
     }
 
     pub fn grant_role(&mut self, username: &str, role: String) -> Result<()> {
-        let user = self.users.get_mut(username)
+        let user = self
+            .users
+            .get_mut(username)
             .ok_or_else(|| anyhow::anyhow!("User not found: {}", username))?;
 
         if !self.roles.contains_key(&role) {
@@ -154,7 +163,9 @@ impl RBACManager {
     }
 
     pub fn revoke_role(&mut self, username: &str, role: &str) -> Result<()> {
-        let user = self.users.get_mut(username)
+        let user = self
+            .users
+            .get_mut(username)
             .ok_or_else(|| anyhow::anyhow!("User not found: {}", username))?;
 
         user.roles.retain(|r| r != role);
@@ -225,4 +236,4 @@ impl RBACManager {
             }
         }
     }
-                                      }
+}

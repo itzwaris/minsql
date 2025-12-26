@@ -1,4 +1,3 @@
-use crate::execution::tuple::{Tuple, Value};
 use crate::language::intent::{AssignmentIntent, ConstantValue};
 use anyhow::Result;
 
@@ -29,10 +28,7 @@ pub struct Update {
 
 impl Update {
     pub fn new(table: String, assignments: Vec<AssignmentIntent>) -> Self {
-        Self {
-            table,
-            assignments,
-        }
+        Self { table, assignments }
     }
 
     pub fn execute(&self) -> Result<usize> {
