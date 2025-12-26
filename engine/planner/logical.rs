@@ -1,4 +1,5 @@
 use crate::language::ast::Statement;
+use crate::language::ast::ColumnDefinition;
 use crate::language::intent::*;
 use crate::language::semantic::SemanticAnalyzer;
 use crate::language::JoinType;
@@ -52,6 +53,10 @@ pub enum LogicalPlan {
     Delete {
         table: String,
         filter: Option<FilterIntent>,
+    },
+    CreateTable {
+        name: String,
+        columns: Vec<ColumnDefinition>,
     },
 }
 
@@ -157,6 +162,13 @@ impl LogicalPlanner {
                     table: target.clone(),
                     filter: filter.clone(),
                 }),
+            },
+            Intent::Schema { operation } => match operation {
+                SchemaIntent::CreateTable { name, columns } => Ok(LogicalPlan::CreateTable {
+                    name: name.clone(),
+                    columns: columns.clone(),
+                }),
+                _ => anyhow::bail!("Unsupported schema operation"),
             },
             _ => anyhow::bail!("Unsupported intent type"),
         }
