@@ -3,105 +3,79 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  create-release:
-    name: Create Release
+  release:
     runs-on: ubuntu-latest
     outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-
-  build-release:
-    name: Build Release
-    needs: create-release
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-20.04
-            target: x86_64-unknown-linux-gnu
-            artifact_name: minsql
-            asset_name: minsql-linux-amd64
-          - os: ubuntu-20.04
-            target: aarch64-unknown-linux-gnu
-            artifact_name: minsql
-            asset_name: minsql-linux-arm64
+      upload_url: ${{ steps.release.outputs.upload_url }}
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+
+      - id: release
+        uses: softprops/action-gh-release@v2
         with:
-          profile: minimal
-          toolchain: stable
-          target: ${{ matrix.target }}
-          
-      - name: Install build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential clang
-          
-      - name: Build release binary
+          generate_release_notes: true
+
+  build:
+    needs: release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            name: minsql-linux-amd64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            name: minsql-linux-arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install linker
+        run: sudo apt-get update && sudo apt-get install -y clang lld
+
+      - name: Build
         run: cargo build --release --target ${{ matrix.target }}
-        
-      - name: Strip binary
-        run: strip target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
-        
-      - name: Create archive
+
+      - name: Strip
+        run: strip target/${{ matrix.target }}/release/minsql
+
+      - name: Package
         run: |
           cd target/${{ matrix.target }}/release
-          tar czf ${{ matrix.asset_name }}.tar.gz ${{ matrix.artifact_name }}
-          
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: target/${{ matrix.target }}/release/${{ matrix.asset_name }}.tar.gz
-          asset_name: ${{ matrix.asset_name }}.tar.gz
-          asset_content_type: application/gzip
+          tar -czf ${{ matrix.name }}.tar.gz minsql
 
-  build-deb:
-    name: Build Debian Package
-    needs: create-release
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: target/${{ matrix.target }}/release/${{ matrix.name }}.tar.gz
+
+  deb:
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - run: cargo install cargo-deb --locked
+
+      - run: cargo deb
+
+      - uses: softprops/action-gh-release@v2
         with:
-          profile: minimal
-          toolchain: stable
-          
-      - name: Install cargo-deb
-        run: cargo install cargo-deb
-        
-      - name: Build deb package
-        run: cargo deb
-        
-      - name: Upload deb package
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: target/debian/minsql_*.deb
-          asset_name: minsql.deb
-          asset_content_type: application/vnd.debian.binary-package
+          files: target/debian/*.deb
