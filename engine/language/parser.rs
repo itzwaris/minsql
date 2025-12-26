@@ -599,13 +599,13 @@ impl Parser {
         let type_name = self.parse_identifier()?;
 
         match type_name.to_lowercase().as_str() {
-            "boolean" => Ok(DataType::Boolean),
-            "integer" => Ok(DataType::Integer),
+            "boolean" | "bool" => Ok(DataType::Boolean),
+            "integer" | "int" => Ok(DataType::Integer),
             "bigint" => Ok(DataType::BigInt),
-            "real" => Ok(DataType::Real),
+            "real" | "float" => Ok(DataType::Real),
             "double" => Ok(DataType::Double),
-            "text" => Ok(DataType::Text),
-            "timestamp" => Ok(DataType::Timestamp),
+            "text" | "string" | "varchar" => Ok(DataType::Text),
+            "timestamp" | "datetime" => Ok(DataType::Timestamp),
             _ => anyhow::bail!("Unknown data type: {}", type_name),
         }
     }
