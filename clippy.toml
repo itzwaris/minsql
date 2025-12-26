@@ -1,0 +1,28 @@
+warn = [
+    "clippy::pedantic",
+]
+
+allow = [
+    "clippy::module_name_repetitions",
+    "clippy::enum_variant_names",
+    "clippy::too_many_arguments",
+    "clippy::type_complexity",
+    "clippy::needless_lifetimes",
+    "clippy::missing_errors_doc",
+    "clippy::missing_panics_doc",
+    "clippy::vec_init_then_push",
+    "clippy::needless_return",
+    "clippy::manual_range_contains",
+    "clippy::match_bool",
+    "clippy::collapsible_else_if",
+    "clippy::map_flatten",
+    "clippy::filter_map_next",
+    "clippy::manual_flatten",
+    "clippy::needless_borrow",
+    "clippy::needless_pass_by_value",
+    "clippy::redundant_clone",
+    "clippy::single_match",
+    "clippy::upper_case_acronyms",
+]
+
+msrv = "1.70"
