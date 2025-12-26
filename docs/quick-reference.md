@@ -3,101 +3,195 @@
 ## Installation
 
 ```bash
-# APT (Ubuntu/Debian)
-sudo apt install minsql
-
 # From source
 git clone https://github.com/notwaris/minsql.git
-cd minsql && ./tools/build.sh release
+cd minsql
+cargo build --release
 sudo cp target/release/minsql /usr/bin/
 ```
 
-## Service Management
+## Starting the Server
 
 ```bash
-# Start
-sudo systemctl start minsql
+# Single node (development)
+cargo run -- --node-id 1 --data-dir ./data --port 5433
 
-# Stop
-sudo systemctl stop minsql
+# With logging
+RUST_LOG=info cargo run -- --node-id 1 --data-dir ./data --port 5433
 
-# Status
-sudo systemctl status minsql
+# Production release
+./target/release/minsql --node-id 1 --data-dir /var/lib/minsql --port 5433
 
-# Logs
-sudo journalctl -u minsql -f
-
-# Enable autostart
-sudo systemctl enable minsql
+# Multi-node cluster
+./target/release/minsql --node-id 1 --port 5433 --peers node2:5433,node3:5433
 ```
+
+## Testing Connection
+
+```bash
+# Run test client
+cargo run --example test_client
+
+# Run validation tests
+cargo test --workspace
+```
+
+## Data Types
+
+**Supported Types:**
+- `INTEGER` / `INT` - 64-bit signed integer
+- `BIGINT` - 64-bit signed integer
+- `REAL` / `FLOAT` - 64-bit floating point
+- `DOUBLE` - 64-bit floating point
+- `TEXT` / `STRING` / `VARCHAR` - Variable-length text
+- `BOOLEAN` / `BOOL` - True/false value
+- `TIMESTAMP` / `DATETIME` - Date and time
 
 ## Basic Queries
 
-### Data Retrieval
+### Schema Management
+
 ```sql
--- All rows
-retrieve users
+-- Create table with various types
+CREATE TABLE users (
+  id INT PRIMARY KEY,
+  name TEXT NOT NULL,
+  email VARCHAR,
+  age INTEGER,
+  balance FLOAT,
+  active BOOL,
+  created_at TIMESTAMP
+)
 
--- With filter
-retrieve users where age > 18
-
--- With columns
-retrieve name, email from users where active = true
-
--- With ordering
-retrieve users order by created_at desc limit 10
-
--- Time-travel
-retrieve users at timestamp '2024-11-10 12:03:21'
+-- Create with constraints
+CREATE TABLE products (
+  id BIGINT PRIMARY KEY,
+  name TEXT NOT NULL,
+  price REAL NOT NULL,
+  stock INTEGER
+)
 ```
 
 ### Data Modification
+
 ```sql
--- Insert
-insert into users (name, email, age) values ('Alice', 'alice@example.com', 30)
+-- Insert single row
+INSERT INTO users (name, email, age) VALUES ('Alice', 'alice@example.com', 30)
 
--- Update
-update users set age = 31 where name = 'Alice'
+-- Insert with all supported types
+INSERT INTO products (id, name, price, stock) 
+VALUES (1, 'Laptop', 999.99, 50)
 
--- Delete
-delete from users where age < 18
+-- Update with filter
+UPDATE users SET age = 31 WHERE name = 'Alice'
+
+-- Update multiple columns
+UPDATE products SET price = 899.99, stock = 45 WHERE id = 1
+
+-- Delete with filter
+DELETE FROM users WHERE age < 18
+
+-- Delete all matching
+DELETE FROM products WHERE stock = 0
 ```
 
-### Schema Management
+### Data Retrieval
+
 ```sql
--- Create table
-create table users (
-  id bigint primary key,
-  name text not null,
-  email text unique,
-  age integer
-)
+-- All rows (intent-driven syntax)
+RETRIEVE * FROM users
 
--- Create index
-create index users_email_idx on users (email)
+-- With filter
+RETRIEVE * FROM users WHERE age > 18
 
--- Drop table
-drop table users
+-- With specific columns
+RETRIEVE name, email FROM users WHERE active = true
+
+-- Standard SQL also supported
+SELECT name, age FROM users WHERE age > 25
+
+-- With aggregation
+SELECT COUNT(*) FROM users
 ```
+
+### Query Features
+
+**Filtering:**
+```sql
+-- Comparison operators
+RETRIEVE * FROM users WHERE age > 18
+RETRIEVE * FROM users WHERE age >= 18
+RETRIEVE * FROM users WHERE name = 'Alice'
+RETRIEVE * FROM users WHERE age < 65
+
+-- Multiple conditions (coming soon)
+-- RETRIEVE * FROM users WHERE age > 18 AND active = true
+```
+
+## Storage & Durability
+
+### Write-Ahead Logging
+
+All write operations are automatically logged:
+
+```
+INSERT → WAL Log → Storage Write → WAL Flush → Success
+UPDATE → WAL Log → Storage Modify → WAL Flush → Success
+DELETE → WAL Log → Storage Remove → WAL Flush → Success
+CREATE TABLE → WAL Log → Catalog Write → Checkpoint → Success
+```
+
+**Guarantees:**
+- ✅ ACID compliance
+- ✅ Crash recovery via WAL replay
+- ✅ Automatic durability on all writes
+- ✅ Zero data loss on crashes
+
+### Storage Operations
+
+**What Happens on INSERT:**
+1. Tuple converted to internal format
+2. Serialized to JSON/bytes
+3. Written to storage pages
+4. Unique row ID returned
+5. WAL flushed to disk
+6. Indexes updated (if exist)
+
+**What Happens on CREATE TABLE:**
+1. Schema validated and serialized
+2. System catalog entry created
+3. Initial storage pages allocated
+4. WAL logged and checkpointed
+5. Table ready for immediate use
 
 ## Transactions
 
 ```sql
--- Standard
-begin transaction
-  update accounts set balance = balance - 100 where id = 1
-  update accounts set balance = balance + 100 where id = 2
-commit
+-- Standard transaction
+BEGIN TRANSACTION
+  UPDATE accounts SET balance = balance - 100 WHERE id = 1
+  UPDATE accounts SET balance = balance + 100 WHERE id = 2
+COMMIT
 
--- Deterministic
-begin deterministic transaction
-  retrieve users order by id
-commit
+-- Rollback on error
+BEGIN TRANSACTION
+  -- operations
+ROLLBACK
+```
 
--- With timestamp
-begin deterministic transaction at timestamp '2024-12-25 10:00:00'
-  retrieve users
-commit
+## Monitoring
+
+Server automatically reports metrics:
+- Query count
+- Execution count  
+- Commits/aborts
+- Storage operations
+
+Check logs with:
+```bash
+RUST_LOG=info cargo run ...
+RUST_LOG=debug cargo run ...  # Detailed operation logs
+```
 ```
 
 ## Advanced Features
