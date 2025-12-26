@@ -13,7 +13,7 @@
 ## System Requirements
 
 ### Minimum Requirements
-- **OS**: Linux (Ubuntu 20.04+ or Debian 11+ recommended)
+- **OS**: Linux (Ubuntu 25.10+ or Debian 13+ recommended)
 - **CPU**: 2 cores
 - **RAM**: 4 GB
 - **Disk**: 20 GB available space
