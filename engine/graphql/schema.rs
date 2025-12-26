@@ -64,17 +64,15 @@ impl SchemaGenerator {
 
         for table in tables {
             let type_name = Self::to_pascal_case(&table);
-            
+
             let gql_type = GraphQLType {
                 name: type_name.clone(),
-                fields: vec![
-                    GraphQLField {
-                        name: "id".to_string(),
-                        field_type: "ID".to_string(),
-                        nullable: false,
-                        column_mapping: Some("id".to_string()),
-                    },
-                ],
+                fields: vec![GraphQLField {
+                    name: "id".to_string(),
+                    field_type: "ID".to_string(),
+                    nullable: false,
+                    column_mapping: Some("id".to_string()),
+                }],
                 table_mapping: Some(table.clone()),
             };
 
@@ -111,7 +109,10 @@ impl SchemaGenerator {
                             required: false,
                         },
                     ],
-                    sql_template: format!("retrieve * from {} limit $limit offset $offset", table),
+                    sql_template: format!(
+                        "retrieve * from {} limit $limit offset $offset",
+                        table
+                    ),
                 },
             );
         }
@@ -139,27 +140,38 @@ impl SchemaGenerator {
     pub fn generate_sdl(schema: &GraphQLSchema) -> String {
         let mut sdl = String::new();
 
-        for (_, gql_type) in &schema.types {
+        for gql_type in schema.types.values() {
             sdl.push_str(&format!("type {} {{\n", gql_type.name));
             for field in &gql_type.fields {
                 let nullable = if field.nullable { "" } else { "!" };
-                sdl.push_str(&format!("  {}: {}{}\n", field.name, field.field_type, nullable));
+                sdl.push_str(&format!(
+                    "  {}: {}{}\n",
+                    field.name, field.field_type, nullable
+                ));
             }
             sdl.push_str("}\n\n");
         }
 
         sdl.push_str("type Query {\n");
-        for (_, query) in &schema.queries {
-            let args: Vec<String> = query.arguments.iter()
+        for query in schema.queries.values() {
+            let args: Vec<String> = query
+                .arguments
+                .iter()
                 .map(|arg| {
                     let required = if arg.required { "!" } else { "" };
                     format!("{}: {}{}", arg.name, arg.arg_type, required)
                 })
                 .collect();
-            sdl.push_str(&format!("  {}({}): {}\n", query.name, args.join(", "), query.return_type));
+
+            sdl.push_str(&format!(
+                "  {}({}): {}\n",
+                query.name,
+                args.join(", "),
+                query.return_type
+            ));
         }
         sdl.push_str("}\n");
 
         sdl
     }
-      }
+                }
