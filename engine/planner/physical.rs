@@ -1,5 +1,6 @@
 use crate::ffi::storage::StorageEngine;
 use crate::language::intent::*;
+use crate::language::JoinType;
 use crate::planner::logical::LogicalPlan;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};

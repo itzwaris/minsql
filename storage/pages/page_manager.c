@@ -1,10 +1,8 @@
 #include "../include/minsql_storage.h"
+#include "../include/compat.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/mman.h>
 
 typedef struct {
     uint16_t offset;
@@ -12,18 +10,12 @@ typedef struct {
     uint16_t flags;
 } LinePointer;
 
-struct Page {
-    PageHeader header;
-    uint8_t data[PAGE_SIZE - sizeof(PageHeader)];
-    bool dirty;
-    int pin_count;
-};
-
-typedef struct PageManager {
+/* PageManager struct definition */
+struct PageManager {
     int fd;
     char filepath[256];
     uint32_t num_pages;
-} PageManager;
+};
 
 PageManager* page_manager_create(const char* data_dir) {
     PageManager* pm = malloc(sizeof(PageManager));

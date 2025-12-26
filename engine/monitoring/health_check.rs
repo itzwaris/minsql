@@ -1,7 +1,6 @@
-use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
-use sysinfo::{System, SystemExt, CpuExt, DiskExt};
+use sysinfo::{System, Disks};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HealthStatus {
@@ -63,7 +62,7 @@ impl HealthChecker {
     }
 
     fn check_cpu(&mut self) -> HealthCheck {
-        self.system.refresh_cpu();
+        self.system.refresh_cpu_all();
         
         let start = std::time::Instant::now();
         
@@ -117,13 +116,13 @@ impl HealthChecker {
     }
 
     fn check_disk(&mut self) -> HealthCheck {
-        self.system.refresh_disks_list();
+        let disks = Disks::new_with_refreshed_list();
         
         let start = std::time::Instant::now();
 
         let mut min_available_percent = 100.0;
         
-        for disk in self.system.disks() {
+        for disk in disks.list() {
             let total = disk.total_space();
             let available = disk.available_space();
             let available_percent = (available as f64 / total as f64) * 100.0;

@@ -1,11 +1,12 @@
 use crate::transactions::snapshot::Snapshot;
 use crate::determinism::clock::LogicalTime;
 use anyhow::Result;
+use serde::{Serialize, Deserialize};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use dashmap::DashMap;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct TransactionId(pub u64);
 
 impl TransactionId {

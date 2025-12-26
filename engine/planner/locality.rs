@@ -35,13 +35,15 @@ impl LocalityAnalyzer {
                 let left_info = self.analyze(left);
                 let right_info = self.analyze(right);
 
+                let requires_shuffle = !self.are_colocated(&left_info.shards, &right_info.shards);
+                
                 let mut shards = left_info.shards.clone();
                 shards.extend(right_info.shards);
 
                 LocalityInfo {
                     shards,
                     is_local: left_info.is_local && right_info.is_local,
-                    requires_shuffle: !self.are_colocated(&left_info.shards, &right_info.shards),
+                    requires_shuffle,
                 }
             }
             _ => {

@@ -1,19 +1,7 @@
 #include "include/minsql_storage.h"
+#include "include/compat.h"
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
-typedef struct PageManager PageManager;
-typedef struct Arena Arena;
-
-struct StorageHandle {
-    char data_dir[256];
-    BufferPool* buffer_pool;
-    PageManager* page_manager;
-    WAL* wal;
-    Arena* arena;
-};
 
 extern BufferPool* buffer_pool_create(size_t capacity);
 extern void buffer_pool_destroy(BufferPool* pool);

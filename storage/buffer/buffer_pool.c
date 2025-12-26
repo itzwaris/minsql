@@ -1,8 +1,8 @@
 #include "../include/minsql_storage.h"
+#include "../include/compat.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
 
 #define DEFAULT_BUFFER_POOL_SIZE 1024
 

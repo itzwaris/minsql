@@ -107,7 +107,7 @@ async fn handle_connection(
 }
 
 async fn execute_query(query_text: &str, storage: &StorageEngine) -> Result<serde_json::Value> {
-    let parser = Parser::new();
+    let mut parser = Parser::new();
     let ast = parser.parse(query_text)?;
 
     let logical_planner = LogicalPlanner::new();
@@ -129,8 +129,8 @@ async fn execute_statement(
     storage: &StorageEngine,
     raft_node: &RaftNode,
 ) -> Result<()> {
-    let parser = Parser::new();
-    let ast = parser.parse(statement)?;
+    let mut parser = Parser::new();
+    let _ast = parser.parse(statement)?;
 
     raft_node.propose_command(statement.as_bytes().to_vec()).await?;
 

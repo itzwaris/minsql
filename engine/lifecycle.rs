@@ -55,10 +55,12 @@ impl Lifecycle {
             })
         };
 
+        let storage_for_shutdown = self.storage.clone();
+        let config_node_id = self.config.node_id;
+        
         let server_handle = {
-            let server = self.server;
             tokio::spawn(async move {
-                server.serve().await
+                self.server.serve().await
             })
         };
 
@@ -84,7 +86,12 @@ impl Lifecycle {
             }
         }
 
-        self.shutdown().await?;
+        // Shutdown logic
+        tracing::info!("Shutting down node {}", config_node_id);
+        storage_for_shutdown.checkpoint()?;
+        storage_for_shutdown.shutdown();
+        tracing::info!("Shutdown complete");
+        
         Ok(())
     }
 

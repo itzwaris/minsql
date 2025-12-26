@@ -13,13 +13,15 @@ extern "C" {
 #define WAL_BUFFER_SIZE 65536
 #define BTREE_ORDER 128
 
+// Forward declarations
 typedef struct StorageHandle StorageHandle;
 typedef struct BufferPool BufferPool;
 typedef struct WAL WAL;
-typedef struct Page Page;
 typedef struct BTreeIndex BTreeIndex;
 typedef struct HashIndex HashIndex;
 typedef struct BloomFilter BloomFilter;
+typedef struct PageManager PageManager;
+typedef struct Arena Arena;
 
 typedef enum {
     WAL_INSERT = 1,
@@ -38,6 +40,7 @@ typedef enum {
     STORAGE_CORRUPTION = 4
 } StorageResult;
 
+// PageHeader must be defined first since Page uses it
 typedef struct {
     uint32_t page_id;
     uint32_t checksum;
@@ -48,6 +51,14 @@ typedef struct {
     uint64_t lsn;
 } PageHeader;
 
+// Page struct with full definition
+typedef struct Page {
+    PageHeader header;
+    bool dirty;
+    uint16_t pin_count;
+    uint8_t data[PAGE_SIZE - sizeof(PageHeader) - sizeof(bool) - sizeof(uint16_t)];
+} Page;
+
 typedef struct {
     uint64_t lsn;
     uint32_t transaction_id;
@@ -56,6 +67,15 @@ typedef struct {
     uint16_t length;
     uint8_t data[];
 } WALEntry;
+
+/* StorageHandle struct - full definition for cross-file access */
+struct StorageHandle {
+    char data_dir[256];
+    BufferPool* buffer_pool;
+    PageManager* page_manager;
+    WAL* wal;
+    Arena* arena;
+};
 
 StorageHandle* storage_init(const char* data_dir);
 void storage_shutdown(StorageHandle* handle);

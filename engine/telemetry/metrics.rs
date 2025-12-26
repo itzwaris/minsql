@@ -42,7 +42,7 @@ impl MetricsRegistry {
         self.statements_executed.load(Ordering::Relaxed)
     }
 
-    pub async fn report_loop(self) {
+    pub async fn report_loop(&self) {
         let mut ticker = interval(Duration::from_secs(60));
 
         loop {

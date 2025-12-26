@@ -1,7 +1,7 @@
 #include "../include/minsql_storage.h"
+#include "../include/compat.h"
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
 
 #define ARENA_CAPACITY (16 * 1024 * 1024)
 

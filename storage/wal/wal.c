@@ -1,10 +1,8 @@
 #include "../include/minsql_storage.h"
+#include "../include/compat.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <pthread.h>
 #include <errno.h>
 
 struct WAL {

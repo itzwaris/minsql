@@ -1,6 +1,7 @@
 use crate::language::ast::Statement;
 use crate::language::intent::*;
 use crate::language::semantic::SemanticAnalyzer;
+use crate::language::JoinType;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
