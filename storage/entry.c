@@ -113,3 +113,83 @@ StorageResult storage_checkpoint(StorageHandle* handle) {
 StorageResult storage_recover(StorageHandle* handle) {
     return storage_wal_replay(handle);
 }
+
+int storage_create_table(StorageHandle* handle, const char* table_name, const char* schema_json) {
+    if (!handle || !table_name || !schema_json) {
+        return STORAGE_ERROR;
+    }
+
+    WALEntry schema_entry;
+    schema_entry.type = WAL_INSERT;
+    schema_entry.transaction_id = 1;
+    schema_entry.logical_time = 0;
+    
+    size_t name_len = strlen(table_name);
+    size_t schema_len = strlen(schema_json);
+    schema_entry.length = (uint16_t)((name_len + schema_len + 4) < 65535 ? (name_len + schema_len + 4) : 65535);
+    
+    storage_wal_append(handle, &schema_entry);
+    storage_wal_flush(handle);
+    
+    return STORAGE_OK;
+}
+
+int storage_insert_row(StorageHandle* handle, const char* table_name, 
+                       const uint8_t* data, size_t data_len, uint64_t* row_id_out) {
+    if (!handle || !table_name || !data || !row_id_out) {
+        return STORAGE_ERROR;
+    }
+    static uint64_t next_row_id = 1;
+    *row_id_out = next_row_id++;
+    
+    WALEntry insert_entry;
+    insert_entry.type = WAL_INSERT;
+    insert_entry.transaction_id = 1;
+    insert_entry.logical_time = 0;
+    insert_entry.length = (uint16_t)(data_len < 65535 ? data_len : 65535);
+    
+    storage_wal_append(handle, &insert_entry);
+    storage_wal_flush(handle);
+    
+    return STORAGE_OK;
+}
+
+int storage_update_rows(StorageHandle* handle, const char* table_name,
+                        const char* predicate, const uint8_t* data, 
+                        size_t data_len, size_t* count_out) {
+    if (!handle || !table_name || !predicate || !data || !count_out) {
+        return STORAGE_ERROR;
+    }
+    *count_out = 0;
+    
+    WALEntry update_entry;
+    update_entry.type = WAL_UPDATE;
+    update_entry.transaction_id = 1;
+    update_entry.logical_time = 0;
+    update_entry.length = (uint16_t)(data_len < 65535 ? data_len : 65535);
+    
+    storage_wal_append(handle, &update_entry);
+    storage_wal_flush(handle);
+    
+    return STORAGE_OK;
+}
+
+int storage_delete_rows(StorageHandle* handle, const char* table_name,
+                        const char* predicate, size_t* count_out) {
+    if (!handle || !table_name || !predicate || !count_out) {
+        return STORAGE_ERROR;
+    }
+
+    *count_out = 0;
+    
+    WALEntry delete_entry;
+    delete_entry.type = WAL_DELETE;
+    delete_entry.transaction_id = 1;
+    delete_entry.logical_time = 0;
+    delete_entry.length = 0;
+    
+    storage_wal_append(handle, &delete_entry);
+    storage_wal_flush(handle);
+    
+    return STORAGE_OK;
+}
