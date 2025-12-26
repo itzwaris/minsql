@@ -20,7 +20,7 @@
 - **Network**: 1 Gbps recommended for cluster deployments
 
 ### Recommended Requirements
-- **OS**: Ubuntu 22.04 LTS
+- **OS**: Ubuntu 25.10 LTS
 - **CPU**: 8 cores
 - **RAM**: 16 GB
 - **Disk**: 100 GB SSD
