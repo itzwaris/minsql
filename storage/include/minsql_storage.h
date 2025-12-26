@@ -106,6 +106,11 @@ void storage_destroy_bloom(BloomFilter* filter);
 void storage_bloom_insert(BloomFilter* filter, const void* key, size_t key_len);
 bool storage_bloom_might_contain(BloomFilter* filter, const void* key, size_t key_len);
 
+int storage_create_table(StorageHandle* handle, const char* table_name, const char* schema_json);
+int storage_insert_row(StorageHandle* handle, const char* table_name, const uint8_t* data, size_t data_len, uint64_t* row_id_out);
+int storage_update_rows(StorageHandle* handle, const char* table_name, const char* predicate, const uint8_t* data, size_t data_len, size_t* count_out);
+int storage_delete_rows(StorageHandle* handle, const char* table_name, const char* predicate, size_t* count_out);
+
 StorageResult storage_checkpoint(StorageHandle* handle);
 StorageResult storage_recover(StorageHandle* handle);
 
