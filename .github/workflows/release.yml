@@ -1,81 +1,87 @@
-name: Release
+name: CI
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [master, main, develop]
+  pull_request:
+    branches: [master, main, develop]
 
 env:
   CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
 
 jobs:
-  release:
+  check:
     runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.release.outputs.upload_url }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - id: release
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-
-  build:
-    needs: release
-    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            name: minsql-linux-amd64
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            name: minsql-linux-arm64
+        rust: [stable, nightly]
+    steps:
+      - uses: actions/checkout@v4
 
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+      - run: cargo check --workspace --all-features
+
+  test:
+    runs-on: ubuntu-latest
+    needs: check
     steps:
       - uses: actions/checkout@v4
 
       - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Install linker
-        run: sudo apt-get update && sudo apt-get install -y clang lld
+      - run: cargo test --workspace --all-features
 
-      - name: Build
-        run: cargo build --release --target ${{ matrix.target }}
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Strip
-        run: strip target/${{ matrix.target }}/release/minsql
-
-      - name: Package
-        run: |
-          cd target/${{ matrix.target }}/release
-          tar -czf ${{ matrix.name }}.tar.gz minsql
-
-      - uses: softprops/action-gh-release@v2
+      - uses: dtolnay/rust-toolchain@v1
         with:
-          files: target/${{ matrix.target }}/release/${{ matrix.name }}.tar.gz
+          toolchain: 1.70.0
 
-  deb:
-    needs: release
+      - uses: Swatinem/rust-cache@v2
+
+      - run: cargo check --workspace
+
+  security:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: dtolnay/rust-toolchain@stable
 
+      - run: cargo install cargo-deny --locked
+
+      - run: cargo deny check
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
       - uses: Swatinem/rust-cache@v2
 
-      - run: cargo install cargo-deb --locked
+      - run: cargo install cargo-tarpaulin --locked
 
-      - run: cargo deb
+      - run: cargo tarpaulin --workspace --all-features --timeout 300 --out Xml
 
-      - uses: softprops/action-gh-release@v2
+      - uses: codecov/codecov-action@v4
         with:
-          files: target/debian/*.deb
+          files: cobertura.xml
+          fail_ci_if_error: false
