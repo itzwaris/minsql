@@ -36,13 +36,13 @@ impl HealthChecker {
     }
 
     pub fn check_all(&mut self) -> HealthReport {
-        let mut checks = Vec::new();
-
-        checks.push(self.check_cpu());
-        checks.push(self.check_memory());
-        checks.push(self.check_disk());
-        checks.push(self.check_raft_health());
-        checks.push(self.check_storage_health());
+        let checks = vec![
+            self.check_cpu(),
+            self.check_memory(),
+            self.check_disk(),
+            self.check_raft_health(),
+            self.check_storage_health(),
+        ];
 
         let overall_status = checks
             .iter()
