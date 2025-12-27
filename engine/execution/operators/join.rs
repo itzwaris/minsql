@@ -14,7 +14,7 @@ pub struct HashJoin {
 
 impl HashJoin {
     pub fn new(left: Vec<Tuple>, right: Vec<Tuple>, condition: FilterIntent) -> Self {
-        let mut hash_table = HashMap::new();
+        let mut hash_table: HashMap<String, Vec<Tuple>> = HashMap::new();
 
         for tuple in &right {
             let key = Self::extract_join_key(tuple);
@@ -107,4 +107,4 @@ impl NestedLoopJoin {
 
         self.next()
     }
-}
+            }
