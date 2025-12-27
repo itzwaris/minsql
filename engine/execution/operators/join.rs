@@ -107,4 +107,4 @@ impl NestedLoopJoin {
 
         self.next()
     }
-            }
+}
