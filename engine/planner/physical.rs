@@ -80,7 +80,6 @@ impl<'a> PhysicalPlanner<'a> {
         Self { storage }
     }
 
-    // ✅ This recursion is intentional (tree traversal)
     #[allow(clippy::only_used_in_recursion)]
     pub fn plan(&self, logical_plan: &LogicalPlan) -> Result<PhysicalPlan> {
         match logical_plan {
