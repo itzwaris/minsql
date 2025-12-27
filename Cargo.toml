@@ -65,6 +65,3 @@ debug = true
 
 [lints.clippy]
 only_used_in_recursion = "allow"
-type_complexity = "allow"
-too_many_arguments = "allow"
-needless_return = "allow"
