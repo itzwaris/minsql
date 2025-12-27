@@ -10,7 +10,7 @@ Keep things respectful and professional. We're all here to build something great
 
 ### What You'll Need
 
-- Rust 1.75+
+- Rust 1.82+
 - GCC/Clang with C++20 support
 - Linux environment (Ubuntu/Debian works best)
 - Git
