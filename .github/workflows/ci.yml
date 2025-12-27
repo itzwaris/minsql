@@ -18,10 +18,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Rust (stable + components)
+      - name: Install Rust 1.82
         uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: stable
+          toolchain: 1.82.0
           components: rustfmt, clippy
 
       - name: Cache cargo
@@ -33,8 +33,8 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
 
-      - name: Build check
+      - name: Build
         run: cargo check --workspace --all-features
 
-      - name: Run tests
+      - name: Test
         run: cargo test --workspace --all-features
