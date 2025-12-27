@@ -13,8 +13,8 @@ pub enum Permission {
     CreateIndex,
     DropIndex,
     CreateUser,
-    GrantPermission,
-    RevokePermission,
+    Grant,
+    Revoke,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -59,8 +59,8 @@ impl RBACManager {
                 Permission::CreateIndex,
                 Permission::DropIndex,
                 Permission::CreateUser,
-                Permission::GrantPermission,
-                Permission::RevokePermission,
+                Permission::Grant,
+                Permission::Revoke,
             ]
             .into_iter()
             .collect(),
@@ -137,11 +137,8 @@ impl RBACManager {
             }
         }
 
-        let user = User {
-            username: username.clone(),
-            roles,
-        };
-        self.users.insert(username, user);
+        let user = User { username, roles };
+        self.users.insert(user.username.clone(), user);
         Ok(())
     }
 
@@ -194,9 +191,9 @@ impl RBACManager {
             return true;
         }
 
-        for inherited_role_name in &role.inherits_from {
-            if let Some(inherited_role) = self.roles.get(inherited_role_name) {
-                if self.role_has_permission(inherited_role, permission) {
+        for inherited in &role.inherits_from {
+            if let Some(parent) = self.roles.get(inherited) {
+                if self.role_has_permission(parent, permission) {
                     return true;
                 }
             }
@@ -230,10 +227,10 @@ impl RBACManager {
     fn collect_role_permissions(&self, role: &Role, permissions: &mut HashSet<Permission>) {
         permissions.extend(role.permissions.iter().cloned());
 
-        for inherited_role_name in &role.inherits_from {
-            if let Some(inherited_role) = self.roles.get(inherited_role_name) {
-                self.collect_role_permissions(inherited_role, permissions);
+        for inherited in &role.inherits_from {
+            if let Some(parent) = self.roles.get(inherited) {
+                self.collect_role_permissions(parent, permissions);
             }
         }
     }
-}
+        }
