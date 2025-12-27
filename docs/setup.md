@@ -28,7 +28,7 @@
 
 ### Software Dependencies
 - GCC 11+ or Clang 14+ (for C/C++ compilation)
-- Rust 1.75+ (for building from source)
+- Rust 1.82+ (for building from source)
 - systemd (for service management)
 
 ## Installation Methods
