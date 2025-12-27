@@ -8,7 +8,8 @@ pub struct HashJoin {
     right: Vec<Tuple>,
     condition: FilterIntent,
     hash_table: HashMap<String, Vec<Tuple>>,
-    position: usize,
+    left_pos: usize,
+    right_pos: usize,
 }
 
 impl HashJoin {
@@ -17,10 +18,7 @@ impl HashJoin {
 
         for tuple in &right {
             let key = Self::extract_join_key(tuple);
-            hash_table
-                .entry(key)
-                .or_insert_with(Vec::new)
-                .push(tuple.clone());
+            hash_table.entry(key).or_default().push(tuple.clone());
         }
 
         Self {
@@ -28,39 +26,42 @@ impl HashJoin {
             right,
             condition,
             hash_table,
-            position: 0,
+            left_pos: 0,
+            right_pos: 0,
         }
     }
 
     pub fn next(&mut self) -> Result<Option<Tuple>> {
-        if self.position >= self.left.len() {
-            return Ok(None);
-        }
+        while self.left_pos < self.left.len() {
+            let left_tuple = &self.left[self.left_pos];
+            let key = Self::extract_join_key(left_tuple);
 
-        let left_tuple = &self.left[self.position];
-        self.position += 1;
+            if let Some(matches) = self.hash_table.get(&key) {
+                if self.right_pos < matches.len() {
+                    let right_tuple = &matches[self.right_pos];
+                    self.right_pos += 1;
 
-        let key = Self::extract_join_key(left_tuple);
+                    let mut joined = left_tuple.clone();
+                    for (k, v) in &right_tuple.values {
+                        joined.insert(k.clone(), v.clone());
+                    }
 
-        if let Some(matches) = self.hash_table.get(&key) {
-            if let Some(right_tuple) = matches.first() {
-                let mut joined = left_tuple.clone();
-                for (k, v) in &right_tuple.values {
-                    joined.insert(k.clone(), v.clone());
+                    return Ok(Some(joined));
                 }
-                return Ok(Some(joined));
             }
+
+            self.left_pos += 1;
+            self.right_pos = 0;
         }
 
-        self.next()
+        Ok(None)
     }
 
     fn extract_join_key(tuple: &Tuple) -> String {
-        if let Some(id_val) = tuple.get("id") {
-            format!("{:?}", id_val)
-        } else {
-            String::new()
-        }
+        tuple
+            .get("id")
+            .map(|v| format!("{:?}", v))
+            .unwrap_or_default()
     }
 }
 
@@ -84,24 +85,26 @@ impl NestedLoopJoin {
     }
 
     pub fn next(&mut self) -> Result<Option<Tuple>> {
-        while self.left_pos < self.left.len() {
-            while self.right_pos < self.right.len() {
-                let left_tuple = &self.left[self.left_pos];
-                let right_tuple = &self.right[self.right_pos];
-
-                let mut joined = left_tuple.clone();
-                for (k, v) in &right_tuple.values {
-                    joined.insert(k.clone(), v.clone());
-                }
-
-                self.right_pos += 1;
-                return Ok(Some(joined));
-            }
-
-            self.left_pos += 1;
-            self.right_pos = 0;
+        if self.left_pos >= self.left.len() {
+            return Ok(None);
         }
 
-        Ok(None)
+        if self.right_pos < self.right.len() {
+            let left_tuple = &self.left[self.left_pos];
+            let right_tuple = &self.right[self.right_pos];
+
+            let mut joined = left_tuple.clone();
+            for (k, v) in &right_tuple.values {
+                joined.insert(k.clone(), v.clone());
+            }
+
+            self.right_pos += 1;
+            return Ok(Some(joined));
+        }
+
+        self.left_pos += 1;
+        self.right_pos = 0;
+
+        self.next()
     }
 }
