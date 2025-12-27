@@ -62,6 +62,3 @@ strip = true
 [profile.dev]
 opt-level = 0
 debug = true
-
-[lints.clippy]
-only_used_in_recursion = "allow"
