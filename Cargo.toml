@@ -62,3 +62,9 @@ strip = true
 [profile.dev]
 opt-level = 0
 debug = true
+
+[lints.clippy]
+only_used_in_recursion = "allow"
+type_complexity = "allow"
+too_many_arguments = "allow"
+needless_return = "allow"
