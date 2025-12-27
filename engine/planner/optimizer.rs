@@ -15,6 +15,7 @@ impl Optimizer {
         Ok(plan)
     }
 
+    #[allow(clippy::only_used_in_recursion)]
     fn push_down_filters(&self, plan: LogicalPlan) -> Result<LogicalPlan> {
         match plan {
             LogicalPlan::Filter { predicate, input } => match *input {
@@ -71,6 +72,7 @@ impl Optimizer {
         }
     }
 
+    #[allow(clippy::only_used_in_recursion)]
     fn push_down_projections(&self, plan: LogicalPlan) -> Result<LogicalPlan> {
         match plan {
             LogicalPlan::Project { columns, input } => {
@@ -91,6 +93,7 @@ impl Optimizer {
         }
     }
 
+    #[allow(clippy::only_used_in_recursion)]
     fn fold_constants(&self, plan: LogicalPlan) -> Result<LogicalPlan> {
         match plan {
             LogicalPlan::Filter { predicate, input } => {
