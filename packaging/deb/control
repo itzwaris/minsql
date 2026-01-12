@@ -3,7 +3,7 @@ Version: 0.1.0
 Section: database
 Priority: optional
 Architecture: amd64
-Maintainer: notwaris
+Maintainer: itzwaris
 Description: A production grade, intent driven database system
  minsql is a new class of database that prioritizes:
  - Intent-driven queries
