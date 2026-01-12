@@ -4,7 +4,7 @@
 
 ```bash
 # From source
-git clone https://github.com/notwaris/minsql.git
+git clone https://github.com/itzwaris/minsql.git
 cd minsql
 cargo build --release
 sudo cp target/release/minsql /usr/bin/
@@ -434,9 +434,4 @@ export RUST_BACKTRACE=1
 - **Features**: [docs/features.md](features.md)
 - **Architecture**: [docs/architecture.md](architecture.md)
 - **Language Reference**: [docs/language.md](language.md)
-- **GitHub**: https://github.com/notwaris/minsql
-
-## Support
-
-- Issues: https://github.com/notwaris/minsql/issues
-- Discussions: https://github.com/notwaris/minsql/discussions
+- **GitHub**: https://github.com/itzwaris/minsql
