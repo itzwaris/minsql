@@ -2,10 +2,10 @@
 name = "minsql"
 version = "0.1.0"
 edition = "2021"
-authors = ["notwaris"]
+authors = ["itzwaris"]
 license = "MIT"
 description = "A production grade, intent driven database system with deterministic execution"
-repository = "https://github.com/notwaris/minsql"
+repository = "https://github.com/itzwaris/minsql"
 keywords = ["database", "sql", "storage", "distributed"]
 categories = ["database"]
 
