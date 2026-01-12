@@ -75,7 +75,7 @@ sudo systemctl daemon-reload
 
 ```bash
 # Clone and build in debug mode
-git clone https://github.com/notwaris/minsql.git
+git clone https://github.com/itzwaris/minsql.git
 cd minsql
 ./tools/build.sh debug
 
