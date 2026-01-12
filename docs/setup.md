@@ -51,7 +51,7 @@ The package installation automatically:
 
 ```bash
 # Clone repository
-git clone https://github.com/notwaris/minsql.git
+git clone https://github.com/itzwaris/minsql.git
 cd minsql
 
 # Build release binary
