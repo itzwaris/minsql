@@ -1,7 +1,7 @@
 # minsql
 A revolutionary, intent-driven database system with deterministic execution
 
-> The Database Project. minsql. `(c) notwaris`
+> The Database Project. minsql. `(c) itzwaris`
 
 <p align="center">
   <img src="https://i.postimg.cc/3xcB9GVJ/tree.png">
